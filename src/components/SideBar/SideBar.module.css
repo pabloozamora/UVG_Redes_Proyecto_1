@@ -1,0 +1,17 @@
+.sideBarContainer {
+    width: 250px;
+    height: 100%;
+    background-color: #3e3a3a;
+    z-index: 100;
+    transition: transform 0.3s ease-in-out;
+}
+
+.sideBarContent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.active {
+    background-color: #e0e0e0;
+}

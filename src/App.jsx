@@ -1,13 +1,19 @@
-import { useState } from 'react'
 import './App.css'
-import XMPPClient from './components/XmppChat/XMPPClient'
+import Login from './components/Login/Login'
+import { SessionProvider } from './components/context/SessionContext'
+import { BrowserRouter as Router } from 'react-router-dom'
+import IndexPage from './pages/IndexPage'
 
 function App() {
 
   return (
-    <div className="App">
-      <XMPPClient />
-    </div>
+    <SessionProvider>
+      <Router>
+
+        <IndexPage />
+
+      </Router>
+    </SessionProvider>
   )
 }
 

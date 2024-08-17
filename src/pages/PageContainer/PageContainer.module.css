@@ -1,0 +1,5 @@
+.page {
+    overflow: auto;
+    display: flex;
+    padding-left: 1rem;
+}
