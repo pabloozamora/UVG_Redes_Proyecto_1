@@ -12,6 +12,9 @@ function SessionProvider({ children }) {
     const [loggedIn, setLoggedIn] = useState(false);
     const [contacts, setContacts] = useState([]);
     const [messagesByUser, setMessagesByUser] = useState({});
+    const [newMessage, setNewMessage] = useState({});
+    const [subRequests, setSubRequests] = useState([]);
+    const [pubSubs, setPubSubs] = useState({});
 
     useEffect(() => {
       console.log(messagesByUser);
@@ -26,6 +29,12 @@ function SessionProvider({ children }) {
         setMessagesByUser,
         contacts,
         setContacts,
+        newMessage,
+        setNewMessage,
+        subRequests,
+        setSubRequests,
+        pubSubs,
+        setPubSubs,
     };
   
     useEffect(() => {

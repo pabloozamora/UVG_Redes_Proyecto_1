@@ -4,6 +4,9 @@
     background-color: #3e3a3a;
     z-index: 100;
     transition: transform 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .sideBarContent {

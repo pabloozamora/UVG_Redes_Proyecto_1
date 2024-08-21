@@ -1,0 +1,21 @@
+.contactContainer {
+    display: flex;
+    background-color: #535050;
+    padding: 10px;
+    cursor: pointer;
+}
+
+.contactInfo {
+    display: flex;
+    flex-direction: column;
+    color: #fff;
+}
+
+.newMessageIndicator {
+    height: 20px;
+    width: 20px;
+    background-color: #0cdcd5;
+    margin-left: auto;
+    margin-right: 20px;
+    border-radius: 50%;
+}

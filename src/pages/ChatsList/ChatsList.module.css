@@ -1,0 +1,13 @@
+.chatPageContainer{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.chatsList {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding: 1rem;
+    gap: 1rem;
+}

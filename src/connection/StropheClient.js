@@ -3,7 +3,15 @@ import { Strophe, $msg, $pres, $build, $iq } from 'strophe.js';
 import SessionContext from '../components/context/SessionContext';
 
 const useStropheClient = () => {
-  const { connection, setLoggedIn, setMessagesByUser, setContacts } = useContext(SessionContext);
+  const {
+    connection,
+    setLoggedIn,
+    setMessagesByUser,
+    setContacts,
+    setNewMessage,
+    setSubRequests,
+    setPubSubs,
+  } = useContext(SessionContext);
   const [jid, setJid] = useState('');
   const [password, setPassword] = useState('');
 
@@ -37,8 +45,10 @@ const useStropheClient = () => {
     const from = presence.getAttribute('from');
 
     if (type === 'subscribe') {
+      const statusNode = presence.getElementsByTagName('status')[0];
+      const status = statusNode ? statusNode.textContent : null;
       console.log(`${from} quiere suscribirse a tu presencia.`);
-      // Aquí podrías mostrar una notificación al usuario o manejar la suscripción automáticamente.
+      setSubRequests((prevSubRequests) => [...prevSubRequests, { from, status }]);
     }
 
     return true;
@@ -47,17 +57,86 @@ const useStropheClient = () => {
   const onMessage = (msg) => {
     const from = getBareJid(msg.getAttribute('from'));
     const body = msg.getElementsByTagName('body')[0];
-    const messageText = Strophe.getText(body);
+    const eventNode = msg.getElementsByTagName('event')[0];
+    let messageText = '';
     let type = 'received';
 
-    if (!messageText) {
-      type = 'seen';
+    if (body) {
+      // Mensaje de chat convencional
+
+      messageText = Strophe.getText(body);
+
+      setNewMessage((prevNewMessage) => {
+        return { ...prevNewMessage, [from]: true };
+      });
+  
+      setMessagesByUser((prevMessagesByUser) => {
+        const userMessages = prevMessagesByUser[from] || [];
+        return { ...prevMessagesByUser, [from]: [...userMessages, { from, messageText, type, newMessage: true }] };
+      });
+
+    } else if (eventNode) {
+
+        // Mensaje pubsub - Manejo especial
+
+        const items = eventNode.getElementsByTagName('items')[0];
+
+        if (items) {
+
+            // Identificar el tipo de mensaje pubsub
+
+            const node = items.getAttribute('node');
+
+            if (node === 'http://jabber.org/protocol/nick') { // Mensaje de actualización de nick
+
+                // Extracción del nick publicado en el nodo pubsub
+
+                const item = items.getElementsByTagName('item')[0];
+                const nickElement = item ? item.getElementsByTagName('nick')[0] : null;
+                const nick = nickElement ? Strophe.getText(nickElement) : '';
+                messageText = `Nick actualizado: ${nick}`;
+                type = 'pubsub-nick';
+
+                // Actualización del nick en el estado
+                setPubSubs((prevPubSubs) => {
+                  const userPubSub = prevPubSubs[from] || {}; // Obtén los datos existentes o un objeto vacío
+                  return { 
+                      ...prevPubSubs, 
+                      [from]: { 
+                          ...userPubSub, 
+                          nick 
+                      } 
+                  };
+              });
+            }
+
+            else if (node === 'http://jabber.org/protocol/mood') { // Mensaje de actualización de estado de ánimo
+                
+                // Extracción del estado de ánimo publicado en el nodo pubsub
+
+                const item = items.getElementsByTagName('item')[0];
+                const moodElement = item ? item.getElementsByTagName('mood')[0] : null;
+                const mood = moodElement ? Strophe.getText(moodElement) : '';
+                messageText = `Estado de ánimo actualizado: ${mood}`;
+                type = 'pubsub-mood';
+
+                // Actualización del estado de ánimo en el estado
+
+                setPubSubs((prevPubSubs) => {
+                  const userPubSub = prevPubSubs[from] || {}; // Obtén los datos existentes o un objeto vacío
+                  return { 
+                      ...prevPubSubs, 
+                      [from]: { 
+                          ...userPubSub, 
+                          mood 
+                      } 
+                  };
+                });
+                  
+            }
+        }
     }
 
-    setMessagesByUser((prevMessagesByUser) => {
-      const userMessages = prevMessagesByUser[from] || [];
-      return { ...prevMessagesByUser, [from]: [...userMessages, { from, messageText, type }] };
-    });
     return true;
   };
 

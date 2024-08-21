@@ -52,7 +52,7 @@ const useXmppClient = () => {
   const handleSignUp = () => {
     try {
 
-      const socket = new WebSocket(WEBSOCKET_SERVICE, 'xmpp');
+      const socket = new WebSocket('ws://alumchat.lol:7070/ws', 'xmpp');
 
       socket.onopen = () => {
 
@@ -64,6 +64,7 @@ const useXmppClient = () => {
             to="${XMPP_DOMAIN}" 
             xmlns="jabber:client" 
             xmlns:stream="http://etherx.jabber.org/streams" 
+            xml:lang="en"
             version="1.0">
         `;
         console.log('Enviando mensaje de apertura:', openStream);
