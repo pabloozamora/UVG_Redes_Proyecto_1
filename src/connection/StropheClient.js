@@ -11,6 +11,7 @@ const useStropheClient = () => {
     setNewMessage,
     setSubRequests,
     setPubSubs,
+    setSubRequestsSent,
   } = useContext(SessionContext);
   const [jid, setJid] = useState('');
   const [password, setPassword] = useState('');
@@ -44,12 +45,59 @@ const useStropheClient = () => {
     const type = presence.getAttribute('type');
     const from = presence.getAttribute('from');
 
+    // Verificar si la estrofa contiene un elemento <status>
+    const statusNode = presence.getElementsByTagName('status')[0];
+    let status = statusNode ? statusNode.textContent : null;
+
+    console.log('STATUS:', status);
+
     if (type === 'subscribe') {
       const statusNode = presence.getElementsByTagName('status')[0];
       const status = statusNode ? statusNode.textContent : null;
       console.log(`${from} quiere suscribirse a tu presencia.`);
       setSubRequests((prevSubRequests) => [...prevSubRequests, { from, status }]);
-    }
+
+    } else if (type === 'subscribed') {
+      console.log(`${from} ha aceptado tu solicitud de suscripción.`);
+      setSubRequestsSent((prevSubRequestsSent) => prevSubRequestsSent.filter((jid) => jid !== from));
+
+    } else if (type === 'unsubscribed') {
+      console.log(`${from} ha rechazado tu solicitud de suscripción.`);
+      setSubRequestsSent((prevSubRequestsSent) => prevSubRequestsSent.filter((jid) => jid !== from));
+
+    } else { 
+      // Manejar presencia sin tipo explícito pero con estado (status)
+      console.log(`${from} ha actualizado su estado: ${status}`);
+  
+      const bareJid = getBareJid(from); // Obtener el JID sin el recurso
+  
+      // Obtener el nodo <show> si existe, o asumir "available" si no existe
+      const showNode = presence.getElementsByTagName('show')[0];
+      let show = showNode ? showNode.textContent : "available";
+
+      if (status == 'offline') {
+        show = 'xa';
+        status = null;
+      }
+  
+      // Aquí podrías actualizar el estado del contacto en tu UI
+      setPubSubs((prevPubSubs) => {
+          const userPubSub = prevPubSubs[bareJid] || {}; // Obtener los datos existentes o un objeto vacío
+  
+          // Construir el nuevo objeto de actualización
+          const updatedPubSub = {
+              ...userPubSub,
+              status,
+              show // `show` siempre tendrá un valor, "available" si no estaba presente
+          };
+  
+          return { 
+              ...prevPubSubs, 
+              [bareJid]: updatedPubSub
+          };
+      });
+
+  }
 
     return true;
   };
@@ -107,33 +155,9 @@ const useStropheClient = () => {
                           nick 
                       } 
                   };
-              });
-            }
-
-            else if (node === 'http://jabber.org/protocol/mood') { // Mensaje de actualización de estado de ánimo
-                
-                // Extracción del estado de ánimo publicado en el nodo pubsub
-
-                const item = items.getElementsByTagName('item')[0];
-                const moodElement = item ? item.getElementsByTagName('mood')[0] : null;
-                const mood = moodElement ? Strophe.getText(moodElement) : '';
-                messageText = `Estado de ánimo actualizado: ${mood}`;
-                type = 'pubsub-mood';
-
-                // Actualización del estado de ánimo en el estado
-
-                setPubSubs((prevPubSubs) => {
-                  const userPubSub = prevPubSubs[from] || {}; // Obtén los datos existentes o un objeto vacío
-                  return { 
-                      ...prevPubSubs, 
-                      [from]: { 
-                          ...userPubSub, 
-                          mood 
-                      } 
-                  };
                 });
-                  
             }
+
         }
     }
 
@@ -149,7 +173,6 @@ const useStropheClient = () => {
       connection.addHandler(onMessage, null, 'message', null, null, null);
       connection.addHandler(onPresence, null, 'presence', null, null, null);
       connection.send($pres().tree());
-      fetchContacts();
     } else if (status === Strophe.Status.CONNFAIL) {
       console.log('Failed to connect.');
     } else if (status === Strophe.Status.DISCONNECTING) {
@@ -159,7 +182,8 @@ const useStropheClient = () => {
     }
   };
 
-  const handleConnect = () => {
+  const handleConnect = (e) => {
+    e.preventDefault();
     console.log('jid', jid);
     console.log('password', password);
     connection.connect(jid, password, onConnect);
@@ -175,6 +199,28 @@ const useStropheClient = () => {
     });
   };
 
+  const handleAcceptSubscription = (from) => {
+    connection.send($pres({ to: from, type: 'subscribed' }));
+    setSubRequests((prevSubRequests) => prevSubRequests.filter((request) => request.from !== from));
+  };
+
+  const handleRejectSubscription = (from) => {
+    connection.send($pres({ to: from, type: 'unsubscribed' }));
+    setSubRequests((prevSubRequests) => prevSubRequests.filter((request) => request.from !== from));
+  }
+
+  const sendSubscriptionRequest = (to, message) => {
+    // Crear la estrofa de presencia con la solicitud de suscripción y el mensaje
+    const presenceStanza = $pres({ to, type: 'subscribe' })
+      .c('status').t(message);
+
+    // Enviar la estrofa
+    connection.send(presenceStanza.tree());
+
+    // Actualizar el estado para rastrear las solicitudes enviadas
+    setSubRequestsSent((prevSubRequestsSent) => [...prevSubRequestsSent, to]);
+};
+
   return {
     jid,
     setJid,
@@ -182,6 +228,10 @@ const useStropheClient = () => {
     setPassword,
     sendMessage,
     handleConnect,
+    handleAcceptSubscription,
+    handleRejectSubscription,
+    fetchContacts,
+    sendSubscriptionRequest,
   };
 };
 

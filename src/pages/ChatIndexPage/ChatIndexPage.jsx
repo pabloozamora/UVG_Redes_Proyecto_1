@@ -10,7 +10,7 @@ function ChatIndexPage() {
         <PageContainer>
             <Routes>
                 <Route path="/" element={<ChatsList />} />
-                <Route path="/:jid" element={<ChatPage />} />
+                <Route path="/chat/:jid" element={<ChatPage />} />
                 <Route path="/contacts" element={<ContactsPage />} />
             </Routes>
         </PageContainer>

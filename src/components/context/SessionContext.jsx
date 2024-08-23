@@ -15,6 +15,7 @@ function SessionProvider({ children }) {
     const [newMessage, setNewMessage] = useState({});
     const [subRequests, setSubRequests] = useState([]);
     const [pubSubs, setPubSubs] = useState({});
+    const [subRequestsSent, setSubRequestsSent] = useState([]);
 
     useEffect(() => {
       console.log(messagesByUser);
@@ -35,6 +36,8 @@ function SessionProvider({ children }) {
         setSubRequests,
         pubSubs,
         setPubSubs,
+        subRequestsSent,
+        setSubRequestsSent,
     };
   
     useEffect(() => {

@@ -31,7 +31,7 @@ function ChatPage() {
         <div className={styles.chatContainer}>
             <h3 className={styles.chatName}>{jid}</h3>
             <div className={styles.chatMessages}>
-                {messagesByUser[jid].map((msg, index) => (
+                {messagesByUser[jid]?.map((msg, index) => (
                 <div
                     key={index}
                     style={{ textAlign: msg.type === "sent" ? "right" : "left" }}

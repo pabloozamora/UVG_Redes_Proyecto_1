@@ -20,7 +20,7 @@ const Login = () => {
   } = useXmppClient();
 
   return (
-    <div className={styles.loginContainer}>
+    <form className={styles.loginContainer}>
       <input
         type="text"
         placeholder="JID"
@@ -33,8 +33,8 @@ const Login = () => {
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
-      <button onClick={handleConnect}>Iniciar sesión</button>
-    </div>
+      <button type="submit" onClick={handleConnect}>Iniciar sesión</button>
+    </form>
   );
 };
 

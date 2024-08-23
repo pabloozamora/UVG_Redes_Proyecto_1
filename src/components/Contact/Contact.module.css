@@ -1,14 +1,27 @@
 .contactContainer {
     display: flex;
+    flex-direction: column;
     background-color: #535050;
     padding: 10px;
-    cursor: pointer;
+}
+
+.contactInfoContainer{
+    display: flex;
 }
 
 .contactInfo {
     display: flex;
     flex-direction: column;
     color: #fff;
+}
+
+.contactActions{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 10px;
+    margin-top: 10px;
 }
 
 .newMessageIndicator {
@@ -19,3 +32,51 @@
     margin-right: 20px;
     border-radius: 50%;
 }
+
+.showContainer {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.greenIndicator {
+    background-color: green;
+    border-radius: 50%;
+    width: 10px;
+    height: 10px;
+  }
+  
+  .blueIndicator {
+    background-color: blue;
+    border-radius: 50%;
+    width: 10px;
+    height: 10px;
+  }
+  
+  .yellowIndicator {
+    background-color: yellow;
+    border-radius: 50%;
+    width: 10px;
+    height: 10px;
+  }
+  
+  .grayIndicator {
+    background-color: gray;
+    border-radius: 50%;
+    width: 10px;
+    height: 10px;
+  }
+  
+  .redIndicator {
+    background-color: red;
+    border-radius: 50%;
+    width: 10px;
+    height: 10px;
+  }
+  
+  .defaultIndicator {
+    background-color: lightgray;
+    border-radius: 50%;
+    width: 10px;
+    height: 10px;
+  }
