@@ -1,6 +1,7 @@
 import { useState, useContext, useEffect } from 'react';
 import { Strophe, $msg, $pres, $build, $iq } from 'strophe.js';
 import SessionContext from '../components/context/SessionContext';
+import { useNavigate } from 'react-router-dom';
 
 const useStropheClient = () => {
   const {
@@ -15,6 +16,8 @@ const useStropheClient = () => {
   } = useContext(SessionContext);
   const [jid, setJid] = useState('');
   const [password, setPassword] = useState('');
+
+  const navigate = useNavigate();
 
   // Función para obtener el JID sin el recurso
   const getBareJid = (jid) => {
@@ -179,6 +182,7 @@ const useStropheClient = () => {
       console.log('Disconnecting...');
     } else if (status === Strophe.Status.DISCONNECTED) {
       console.log('Disconnected.');
+      navigate('/');
     }
   };
 
@@ -187,6 +191,30 @@ const useStropheClient = () => {
     console.log('jid', jid);
     console.log('password', password);
     connection.connect(jid, password, onConnect);
+  };
+
+  const handleDisconnect = () => {
+
+    if (connection) {
+      // Enviar una estrofa de presencia 'unavailable' antes de desconectarse
+      connection.send($pres({ type: 'unavailable' }).tree());
+  
+      // Desconectar la conexión
+      connection.disconnect();
+  
+      // Actualizar el estado de la aplicación
+      setLoggedIn(false);
+      setJid('');
+      setPassword('');
+      setMessagesByUser({});
+      setContacts([]);
+      setNewMessage({});
+      setSubRequests([]);
+      setPubSubs({});
+      setSubRequestsSent([]);
+    }
+
+    connection.disconnect();
   };
 
   const sendMessage = (message, to) => {
@@ -228,6 +256,7 @@ const useStropheClient = () => {
     setPassword,
     sendMessage,
     handleConnect,
+    handleDisconnect,
     handleAcceptSubscription,
     handleRejectSubscription,
     fetchContacts,
