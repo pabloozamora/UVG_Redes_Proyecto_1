@@ -2,10 +2,14 @@ import { useState, useContext, useEffect } from 'react';
 import { Strophe, $msg, $pres, $build, $iq } from 'strophe.js';
 import SessionContext from '../components/context/SessionContext';
 import { useNavigate } from 'react-router-dom';
+import { XMPP_DOMAIN } from './xmppConfig';
 
 const useStropheClient = () => {
   const {
     connection,
+    jid,
+    setJid,
+    messagesByGroup,
     setLoggedIn,
     setMessagesByUser,
     setContacts,
@@ -13,8 +17,11 @@ const useStropheClient = () => {
     setSubRequests,
     setPubSubs,
     setSubRequestsSent,
+    setRooms,
+    setNewGroupMessage,
+    setMessagesByGroup,
+    setUserRooms,
   } = useContext(SessionContext);
-  const [jid, setJid] = useState('');
   const [password, setPassword] = useState('');
 
   const navigate = useNavigate();
@@ -106,25 +113,48 @@ const useStropheClient = () => {
   };
 
   const onMessage = (msg) => {
-    const from = getBareJid(msg.getAttribute('from'));
+    let from = msg.getAttribute('from');
     const body = msg.getElementsByTagName('body')[0];
     const eventNode = msg.getElementsByTagName('event')[0];
     let messageText = '';
-    let type = 'received';
+    let type = msg.getAttribute('type');
 
     if (body) {
       // Mensaje de chat convencional
 
       messageText = Strophe.getText(body);
 
+    if (type === 'groupchat') {
+
+      console.log(`Group message from ${from}: ${messageText}`);
+
+      const groupChat = from.split('/')[0];
+      const username = from.split('/')[1];
+
+      setMessagesByGroup((prevMessagesByGroup) => {
+        const groupMessages = prevMessagesByGroup[groupChat] || [];
+        return { ...prevMessagesByGroup, [groupChat]: [...groupMessages, { username, messageText, type: 'groupchat' }] };
+      });
+
+      setNewGroupMessage((prevNewGroupMessage) => {
+        return { ...prevNewGroupMessage, [groupChat]: true };
+      });
+
+    } else if (type === 'chat') {
+
+      from = getBareJid(from);
+      console.log(`Private message from ${from}: ${messageText}`);
+
+      setMessagesByUser((prevMessagesByUser) => {
+        const userMessages = prevMessagesByUser[from] || [];
+        return { ...prevMessagesByUser, [from]: [...userMessages, { from, messageText, type: 'chat' }] };
+      });
+
       setNewMessage((prevNewMessage) => {
         return { ...prevNewMessage, [from]: true };
       });
-  
-      setMessagesByUser((prevMessagesByUser) => {
-        const userMessages = prevMessagesByUser[from] || [];
-        return { ...prevMessagesByUser, [from]: [...userMessages, { from, messageText, type, newMessage: true }] };
-      });
+
+    }
 
     } else if (eventNode) {
 
@@ -134,32 +164,34 @@ const useStropheClient = () => {
 
         if (items) {
 
-            // Identificar el tipo de mensaje pubsub
+          from = getBareJid(from);
 
-            const node = items.getAttribute('node');
+          // Identificar el tipo de mensaje pubsub
 
-            if (node === 'http://jabber.org/protocol/nick') { // Mensaje de actualización de nick
+          const node = items.getAttribute('node');
 
-                // Extracción del nick publicado en el nodo pubsub
+          if (node === 'http://jabber.org/protocol/nick') { // Mensaje de actualización de nick
 
-                const item = items.getElementsByTagName('item')[0];
-                const nickElement = item ? item.getElementsByTagName('nick')[0] : null;
-                const nick = nickElement ? Strophe.getText(nickElement) : '';
-                messageText = `Nick actualizado: ${nick}`;
-                type = 'pubsub-nick';
+              // Extracción del nick publicado en el nodo pubsub
 
-                // Actualización del nick en el estado
-                setPubSubs((prevPubSubs) => {
-                  const userPubSub = prevPubSubs[from] || {}; // Obtén los datos existentes o un objeto vacío
-                  return { 
-                      ...prevPubSubs, 
-                      [from]: { 
-                          ...userPubSub, 
-                          nick 
-                      } 
-                  };
-                });
-            }
+              const item = items.getElementsByTagName('item')[0];
+              const nickElement = item ? item.getElementsByTagName('nick')[0] : null;
+              const nick = nickElement ? Strophe.getText(nickElement) : '';
+              messageText = `Nick actualizado: ${nick}`;
+              type = 'pubsub-nick';
+
+              // Actualización del nick en el estado
+              setPubSubs((prevPubSubs) => {
+                const userPubSub = prevPubSubs[from] || {}; // Obtén los datos existentes o un objeto vacío
+                return { 
+                    ...prevPubSubs, 
+                    [from]: { 
+                        ...userPubSub, 
+                        nick 
+                    } 
+                };
+              });
+          }
 
         }
     }
@@ -247,7 +279,83 @@ const useStropheClient = () => {
 
     // Actualizar el estado para rastrear las solicitudes enviadas
     setSubRequestsSent((prevSubRequestsSent) => [...prevSubRequestsSent, to]);
-};
+  };
+
+  const fetchGroupChats = () => {
+    const serviceJid = `conference.${XMPP_DOMAIN}`;
+  
+    const iq = $iq({ to: serviceJid, type: 'get' })
+      .c('query', { xmlns: 'http://jabber.org/protocol/disco#items' });
+  
+    connection.sendIQ(iq, (iqResponse) => {
+      const items = iqResponse.getElementsByTagName('item');
+      const rooms = [];
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        rooms.push({
+          jid: item.getAttribute('jid'),
+          name: item.getAttribute('name'),
+        });
+      }
+      console.log('Group chats:', rooms);
+      setRooms(() => rooms);
+    }, (error) => {
+      console.error('Failed to fetch group chats:', error);
+    });
+  };
+
+  const joinGroupChat = (roomJid, nickname, password = null) => {
+    // Crear la estrofa de presencia para unirse a la sala
+    let presenceStanza = $pres({ to: `${roomJid}/${nickname}` })
+      .c('x', { xmlns: 'http://jabber.org/protocol/muc' });
+    
+    // Si se proporciona una contraseña, agregarla a la estrofa
+    if (password) {
+      presenceStanza.c('password').t(password);
+    }
+    
+    // Enviar la estrofa de presencia
+    connection.send(presenceStanza.tree());
+  };
+
+  const sendGroupMessage = (roomJid, message) => {
+    const messageStanza = $msg({ to: roomJid, type: 'groupchat' })
+      .c('body').t(message);
+    
+    connection.send(messageStanza.tree());
+  };
+
+  const checkRoomPassword = async (roomJid) => {
+    return new Promise((resolve, reject) => {
+      const iq = $iq({ to: roomJid, type: 'get' })
+        .c('query', { xmlns: 'http://jabber.org/protocol/disco#info' });
+  
+      connection.sendIQ(iq, (response) => {
+        const features = response.getElementsByTagName('feature');
+        let hasPassword = false;
+  
+        for (let i = 0; i < features.length; i++) {
+          const feature = features[i];
+          if (feature.getAttribute('var') === 'muc_passwordprotected') {
+            hasPassword = true;
+            break;
+          }
+        }
+  
+        resolve(hasPassword); // Resolución con `true` o `false`
+      }, (error) => {
+        reject('Failed to retrieve room info: ' + error);
+      });
+    });
+  };
+
+  const leaveGroupChat = (roomJid, nickname) => {
+    // Crear la estrofa de presencia con type="unavailable" para salir de la sala
+    const presenceStanza = $pres({ to: `${roomJid}/${nickname}`, type: 'unavailable' });
+  
+    // Enviar la estrofa de presencia
+    connection.send(presenceStanza.tree());
+  };
 
   return {
     jid,
@@ -260,7 +368,12 @@ const useStropheClient = () => {
     handleAcceptSubscription,
     handleRejectSubscription,
     fetchContacts,
+    fetchGroupChats,
     sendSubscriptionRequest,
+    joinGroupChat,
+    sendGroupMessage,
+    checkRoomPassword,
+    leaveGroupChat,
   };
 };
 

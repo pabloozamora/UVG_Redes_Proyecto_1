@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import PopUp from "../PopUp/PopUp";
 import styles from './SubscribePopUp.module.css';
-import { jid } from "@xmpp/client";
 import useStropheClient from "../../connection/StropheClient";
 
 function SubscribePopUp({
@@ -18,6 +17,7 @@ function SubscribePopUp({
 
   const handleSubmit = () => {
     if (!newJid) return;
+    console.log('PASÓOOOOOOOO');
     sendSubscriptionRequest(newJid);
     callback();
     close();
@@ -27,6 +27,10 @@ function SubscribePopUp({
     callback();
     close();
   };
+
+  useEffect(() => {
+    setNewJid(jid || '');
+  }, [jid]);
 
   return (
     isOpen && (

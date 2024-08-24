@@ -9,20 +9,27 @@ function SessionProvider({ children }) {
     // El token undefined significa que aún no se ha intentado obtener,
     // null es que la sesión no existe
     const [connection, setConnection] = useState(null);
+    const [jid, setJid] = useState('');
     const [loggedIn, setLoggedIn] = useState(false);
     const [contacts, setContacts] = useState([]);
     const [messagesByUser, setMessagesByUser] = useState({});
+    const [messagesByGroup, setMessagesByGroup] = useState({});
     const [newMessage, setNewMessage] = useState({});
+    const [newGroupMessage, setNewGroupMessage] = useState({});
     const [subRequests, setSubRequests] = useState([]);
     const [pubSubs, setPubSubs] = useState({});
     const [subRequestsSent, setSubRequestsSent] = useState([]);
+    const [rooms, setRooms] = useState([]);
+    const [userRooms, setUserRooms] = useState([]);
 
     useEffect(() => {
-      console.log(messagesByUser);
-    }, [messagesByUser]);
+      console.log(userRooms);
+    }, [userRooms]);
 
     const data = {
         connection,
+        jid,
+        setJid,
         setConnection,
         loggedIn,
         setLoggedIn,
@@ -38,6 +45,14 @@ function SessionProvider({ children }) {
         setPubSubs,
         subRequestsSent,
         setSubRequestsSent,
+        rooms,
+        setRooms,
+        messagesByGroup,
+        setMessagesByGroup,
+        newGroupMessage,
+        setNewGroupMessage,
+        userRooms,
+        setUserRooms,
     };
   
     useEffect(() => {

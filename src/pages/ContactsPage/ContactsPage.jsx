@@ -41,10 +41,12 @@ function ContactsPage() {
                 <p>Estos usuarios están solicitando suscribirse a tu presencia</p>
                 {subRequests.map((request, index) => (
                     <div key={index} className={styles.request}>
-                        <p>{request.from}</p>
+                        <p style={{ margin: '0'}}><strong>{request.from}</strong></p>
                         <p>{request.status}</p>
-                        <button onClick={() => handleAcceptSubscription(request.from)}>Aceptar</button>
-                        <button onClick={() => handleRejectSubscription(request.from)}>Rechazar</button>
+                        <div className={styles.requestActions}>
+                            <button onClick={() => handleAcceptSubscription(request.from)}>Aceptar</button>
+                            <button onClick={() => handleRejectSubscription(request.from)}>Rechazar</button>
+                        </div>
                     </div>
                 ))}
             </div>

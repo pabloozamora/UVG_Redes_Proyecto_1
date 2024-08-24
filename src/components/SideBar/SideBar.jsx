@@ -11,9 +11,9 @@ function SideBar() {
             <h1>Alumchat</h1>
         </div>
         <div className={styles.sideBarContent}>
-            <NavLink to="/" className={({ isActive }) => (isActive ? `${styles.active}` : "" )}>Chat</NavLink>
-            <NavLink to="/contacts" className={({ isActive }) => (isActive ? `${styles.active}` : "" )}>Contacts</NavLink>
-            <NavLink to="/settings" className={({ isActive }) => (isActive ? `${styles.active}` : "" )}>Settings</NavLink>
+            <NavLink to="/" className={({ isActive }) => (isActive ? `${styles.active}` : "" )}>Chats</NavLink>
+            <NavLink to="/contacts" className={({ isActive }) => (isActive ? `${styles.active}` : "" )}>Contactos</NavLink>
+            <NavLink to="/rooms" className={({ isActive }) => (isActive ? `${styles.active}` : "" )}>Grupos</NavLink>
             <div className={styles.logoutButton} onClick={handleDisconnect}>Cerrar sesión</div>
         </div>
     </div>
