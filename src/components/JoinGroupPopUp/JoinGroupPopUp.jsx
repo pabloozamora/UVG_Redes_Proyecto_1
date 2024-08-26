@@ -10,17 +10,25 @@ function JoinGroupPopUp({
     roomJid,
     passRequired,
     callback,
+    manualCallback,
 }) {
 
   const [nickName, setNickName] = useState('')
   const [password, setPassword] = useState(null);
   const { joinGroupChat, jid } = useStropheClient();
+  const [manualRoomJid, setManualRoomJid] = useState('');
 
   const handleSubmit = () => {
-    console.log(roomJid, nickName, password);
     const roomNick = nickName || jid;
-    joinGroupChat(roomJid, roomNick, password);
-    callback(roomNick);
+    if (!roomJid) {
+            if (!manualRoomJid) return;
+            joinGroupChat(manualRoomJid, roomNick, password);
+            manualCallback(manualRoomJid, roomNick);
+
+        } else {
+            joinGroupChat(roomJid, roomNick, password);
+            callback(roomNick);
+    }
     close();
   };
 
@@ -29,14 +37,22 @@ function JoinGroupPopUp({
         <PopUp close={close} maxWidth={400} closeButton>
             <div className={styles.subscribePopUpContainer}>
                 <h2>Enviar solicitud de suscripción</h2>
-                <p style={{ marginTop: '0' }}>Uniéndose a <strong>{roomJid}</strong></p>
+                {roomJid && <p style={{ marginTop: '0' }}>Uniéndose a <strong>{roomJid}</strong></p>}
+                {!roomJid && (
+                    <input
+                        type="text"
+                        placeholder="JID de la sala"
+                        value={manualRoomJid}
+                        onChange={(e) => setManualRoomJid(e.target.value)}
+                    />
+                )}
                 <input
                     type="text"
                     placeholder="Nickname"
                     value={nickName}
                     onChange={(e) => setNickName(e.target.value)}
                 />
-                {passRequired && (
+                {(passRequired || !roomJid) && (
                     <input
                         type="text"
                         placeholder="Contraseña"
@@ -54,15 +70,18 @@ function JoinGroupPopUp({
 JoinGroupPopUp.propTypes = {
     close: PropTypes.func.isRequired,
     isOpen: PropTypes.bool,
-    roomJid: PropTypes.string.isRequired,
+    roomJid: PropTypes.string,
     passRequired: PropTypes.bool,
     callback: PropTypes.func,
+    manualCallback: PropTypes.func,
 };
 
 JoinGroupPopUp.defaultProps = {
     isOpen: false,
     callback: () => {},
+    roomJid: '',
     passRequired: false,
+    manualCallback: null,
 };
 
 export default JoinGroupPopUp;

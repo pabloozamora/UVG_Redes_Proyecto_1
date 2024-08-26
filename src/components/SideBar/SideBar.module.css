@@ -14,6 +14,12 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    height: 100%;
+}
+
+.sideBarElement {
+    padding: 10px;
+    background-color: #3e3a3a;
 }
 
 .active {

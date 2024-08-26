@@ -518,6 +518,107 @@ const useStropheClient = () => {
     });
   };
 
+  const fetchAllUsers = (searchTerm = '') => {
+    return new Promise((resolve, reject) => {
+      const iq = $iq({ type: 'set', to: 'search.alumchat.lol' })
+        .c('query', { xmlns: 'jabber:iq:search' })
+        .c('username').t(searchTerm).up()
+        .c('email').t(searchTerm).up(); // Puedes buscar por nombre de usuario, email, etc.
+    
+      connection.sendIQ(iq, (response) => {
+        const items = response.getElementsByTagName('item');
+        const users = [];
+        for (let i = 0; i < items.length; i++) {
+          const item = items[i];
+          const jid = item.getAttribute('jid');
+          const username = item.getElementsByTagName('username')[0]?.textContent;
+          const email = item.getElementsByTagName('email')[0]?.textContent;
+          users.push({ jid, username, email });
+        }
+    
+        if (users.length > 0) {
+          resolve(users);
+        } else {
+          reject('No users found');
+        }
+      }, (error) => {
+        reject('Failed to search users: ' + error);
+      });
+    });
+  };
+  
+  const fetchSearchFields = () => {
+    return new Promise((resolve, reject) => {
+      const iq = $iq({ type: 'get', to: 'search.alumchat.lol' })
+        .c('query', { xmlns: 'jabber:iq:search' });
+  
+      connection.sendIQ(iq, (response) => {
+        const fields = [];
+        const query = response.getElementsByTagName('query')[0];
+        const children = query ? query.childNodes : [];
+  
+        for (let i = 0; i < children.length; i++) {
+          if (children[i].nodeName !== '#text') {
+            fields.push(children[i].nodeName);
+          }
+        }
+  
+        resolve(fields);
+      }, (error) => {
+        reject('Failed to fetch search fields: ' + error);
+      });
+    });
+  };
+
+  const searchUsersAdvanced = (searchTerm) => {
+    return new Promise((resolve, reject) => {
+      const iq = $iq({ type: 'set', to: 'search.alumchat.lol' })
+        .c('query', { xmlns: 'jabber:iq:search' })
+        .c('x', { xmlns: 'jabber:x:data', type: 'submit' })
+        .c('field', { var: 'FORM_TYPE' }).c('value').t('jabber:iq:search').up().up()
+        .c('field', { var: 'search' }).c('value').t(searchTerm).up().up()
+        .c('field', { var: 'Username' }).c('value').t('1').up().up()
+        .c('field', { var: 'Name' }).c('value').t('1').up().up()
+        .c('field', { var: 'Email' }).c('value').t('1').up().up();
+  
+      connection.sendIQ(iq, (response) => {
+        const items = response.getElementsByTagName('item');
+        const users = [];
+        
+        for (let i = 0; i < items.length; i++) {
+          const item = items[i];
+          const fields = item.getElementsByTagName('field');
+          const user = {};
+  
+          for (let j = 0; j < fields.length; j++) {
+            const field = fields[j];
+            const varAttribute = field.getAttribute('var');
+            const value = field.getElementsByTagName('value')[0]?.textContent || '';
+  
+            if (varAttribute === 'jid') {
+              user.jid = value;
+            } else if (varAttribute === 'Username') {
+              user.username = value;
+            } else if (varAttribute === 'Name') {
+              user.name = value;
+            } else if (varAttribute === 'Email') {
+              user.email = value;
+            }
+          }
+  
+          users.push(user);
+        }
+  
+        if (users.length > 0) {
+          resolve(users);
+        } else {
+          reject('No se encontraron usuarios');
+        }
+      }, (error) => {
+        reject('Failed to search users: ' + error);
+      });
+    });
+  };
 
   return {
     jid,
@@ -542,6 +643,9 @@ const useStropheClient = () => {
     fetchMyNickname,
     updateMyNickname,
     deleteAccount,
+    fetchAllUsers,
+    fetchSearchFields,
+    searchUsersAdvanced,
   };
 };
 

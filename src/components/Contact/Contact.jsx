@@ -15,8 +15,6 @@ function Contact({ jid, status, newMessage, nick, requestFollow, subRequestSent,
   
   const indicator = showClasses[show] || { className: 'defaultIndicator', description: 'Desconocido' };
 
-  console.log('show', show);
-
   return (
     
       <div className={styles.contactContainer}>
@@ -56,7 +54,6 @@ Contact.propTypes = {
 };
 
 Contact.defaultProps = {
-  subscription: '',
   newMessage: false,
   nick: '',
   status: '',

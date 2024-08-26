@@ -7,6 +7,7 @@ import ContactsPage from "../ContactsPage/ContactsPage";
 import RoomLists from "../RoomsList";
 import GroupChatPage from "../GroupChatPage/GroupChatPage";
 import ProfilePage from "../ProfilePage";
+import UsersPage from "../UsersPage/UsersPage";
 
 function ChatIndexPage() {
     return(
@@ -18,6 +19,7 @@ function ChatIndexPage() {
                 <Route path="/rooms" element={<RoomLists />} />
                 <Route path="/groupchat/:jid" element={<GroupChatPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/users" element={<UsersPage />} />
             </Routes>
         </PageContainer>
     )

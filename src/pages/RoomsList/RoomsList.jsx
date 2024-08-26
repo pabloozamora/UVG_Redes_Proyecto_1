@@ -27,6 +27,10 @@ function RoomLists() {
     closeJoin();
   }
 
+  const callBackManualJoin = (roomJid, nick) => {
+    setUserRooms((prevUserRooms) => [...prevUserRooms, { jid: roomJid, name: roomJid, nickname: nick }]);
+  }
+
   const callBackJoin = (nick) => {
     setUserRooms((prevUserRooms) => [...prevUserRooms, { jid: currentRoom.jid, name: currentRoom.name, nickname: nick }]);
   }
@@ -65,6 +69,7 @@ function RoomLists() {
         roomJid={currentRoom?.jid}
         passRequired={hasPassword}
         callback={callBackJoin}
+        manualCallback={callBackManualJoin}
       />
       <CreateRoomPopUp
         isOpen={isCreateOpen}
@@ -94,6 +99,7 @@ function RoomLists() {
       </div>
       <div className={styles.userChatRoomsContainer}>
         <h3>Chatrooms disponibles</h3>
+        <button onClick={openJoin}>Agregar manualmente</button>
         {availableRooms.map((room, index) => (
           <div key={index} className={styles.roomContainer}>
             <div className={styles.roomName}>
