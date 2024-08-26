@@ -6,6 +6,7 @@ import ChatPage from "../ChatPage/ChatPage";
 import ContactsPage from "../ContactsPage/ContactsPage";
 import RoomLists from "../RoomsList";
 import GroupChatPage from "../GroupChatPage/GroupChatPage";
+import ProfilePage from "../ProfilePage";
 
 function ChatIndexPage() {
     return(
@@ -16,6 +17,7 @@ function ChatIndexPage() {
                 <Route path="/contacts" element={<ContactsPage />} />
                 <Route path="/rooms" element={<RoomLists />} />
                 <Route path="/groupchat/:jid" element={<GroupChatPage />} />
+                <Route path="/profile" element={<ProfilePage />} />
             </Routes>
         </PageContainer>
     )

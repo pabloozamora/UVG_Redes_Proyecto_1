@@ -1,0 +1,64 @@
+.profilePageContainer{
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+}
+
+.profileInfo{
+    display: flex;
+    flex-direction: column;
+    margin: 20px 0 20px 0;
+}
+
+.formGroup {
+    display: flex;
+    flex-direction: column;
+    margin: 20px 0 10px 0;
+    gap: 10px;
+}
+
+.updateButton {
+    margin-top: 20px;
+    align-self: center;
+}
+
+.greenIndicator {
+    background-color: green;
+    border-radius: 50%;
+    width: 10px;
+    height: 10px;
+  }
+  
+  .blueIndicator {
+    background-color: blue;
+    border-radius: 50%;
+    width: 10px;
+    height: 10px;
+  }
+  
+  .yellowIndicator {
+    background-color: yellow;
+    border-radius: 50%;
+    width: 10px;
+    height: 10px;
+  }
+  
+  .grayIndicator {
+    background-color: gray;
+    border-radius: 50%;
+    width: 10px;
+    height: 10px;
+  }
+  
+  .redIndicator {
+    background-color: red;
+    border-radius: 50%;
+    width: 10px;
+    height: 10px;
+  }
+
+  .showContainer {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}

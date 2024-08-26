@@ -21,6 +21,7 @@ function SessionProvider({ children }) {
     const [subRequestsSent, setSubRequestsSent] = useState([]);
     const [rooms, setRooms] = useState([]);
     const [userRooms, setUserRooms] = useState([]);
+    const [userPresence, setUserPresence] = useState({});
 
     useEffect(() => {
       console.log(userRooms);
@@ -53,6 +54,8 @@ function SessionProvider({ children }) {
         setNewGroupMessage,
         userRooms,
         setUserRooms,
+        userPresence,
+        setUserPresence,
     };
   
     useEffect(() => {

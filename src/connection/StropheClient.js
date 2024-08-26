@@ -21,6 +21,7 @@ const useStropheClient = () => {
     setNewGroupMessage,
     setMessagesByGroup,
     setUserRooms,
+    setUserPresence,
   } = useContext(SessionContext);
   const [password, setPassword] = useState('');
 
@@ -29,6 +30,27 @@ const useStropheClient = () => {
   // Función para obtener el JID sin el recurso
   const getBareJid = (jid) => {
     return jid.split('/')[0];
+  };
+
+  // Función para obtener la presencia del usuario conectado
+  const getMyPresence = () => {
+    const myJid = jid; // Usar el JID del usuario conectado
+    const iq = $iq({ type: 'get', to: myJid })
+      .c('query', { xmlns: 'jabber:iq:last' });
+  
+    connection.sendIQ(iq, (response) => {
+      const presence = response.getElementsByTagName('presence')[0];
+      const statusNode = presence ? presence.getElementsByTagName('status')[0] : null;
+      const status = statusNode ? statusNode.textContent : "Available";
+      const showNode = presence ? presence.getElementsByTagName('show')[0] : null;
+      const show = showNode ? showNode.textContent : "available";
+  
+      console.log(`My status is: ${status}, and show is: ${show}`);
+  
+      setUserPresence({ status, show });
+    }, (error) => {
+      console.error('Failed to retrieve presence:', error);
+    });
   };
 
   const fetchContacts = () => {
@@ -213,6 +235,7 @@ const useStropheClient = () => {
       connection.addHandler(onMessage, null, 'message', null, null, null);
       connection.addHandler(onPresence, null, 'presence', null, null, null);
       connection.send($pres().tree());
+      getMyPresence();
     } else if (status === Strophe.Status.CONNFAIL) {
       console.log('Failed to connect.');
     } else if (status === Strophe.Status.DISCONNECTING) {
@@ -432,7 +455,49 @@ const useStropheClient = () => {
     });
   };
 
+  const updateMyPresence = (show, status) => {
+    const presenceStanza = $pres()
+      .c('show').t(show).up()
+      .c('status').t(status);
+    connection.send(presenceStanza.tree());
+  };
+
+  const fetchMyNickname = () => {
+    return new Promise((resolve, reject) => {
+      const iq = $iq({ type: 'get' })  // Eliminar el "to: jid" ya que no es necesario para obtener el propio nickname
+        .c('query', { xmlns: 'jabber:iq:private' })
+        .c('nick', { xmlns: 'http://jabber.org/protocol/nick' });
+      
+      connection.sendIQ(iq, (response) => {
+        const nicknameElement = response.getElementsByTagName('nick')[0];
+        const nickname = nicknameElement ? nicknameElement.textContent : null;
   
+        if (nickname) {
+          resolve(nickname);
+        } else {
+          reject('Nickname not found');
+        }
+      }, (error) => {
+        reject('Failed to fetch nickname: ' + error);
+      });
+    });
+  };
+
+  const updateMyNickname = (newNickname) => {
+    return new Promise((resolve, reject) => {
+      const iq = $iq({ type: 'set' })  // Eliminamos 'to: jid'
+        .c('query', { xmlns: 'jabber:iq:private' })
+        .c('nick', { xmlns: 'http://jabber.org/protocol/nick' })
+        .t(newNickname);
+      
+      connection.sendIQ(iq, (response) => {
+        resolve('Nickname updated successfully');
+      }, (error) => {
+        reject('Failed to update nickname: ' + error);
+      });
+    });
+  };
+
 
   return {
     jid,
@@ -453,6 +518,9 @@ const useStropheClient = () => {
     leaveGroupChat,
     createGroupChat,
     requestUploadSlot,
+    updateMyPresence,
+    fetchMyNickname,
+    updateMyNickname,
   };
 };
 
