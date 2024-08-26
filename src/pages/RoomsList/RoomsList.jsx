@@ -5,6 +5,7 @@ import SessionContext from "../../components/context/SessionContext";
 import { Link } from "react-router-dom";
 import usePopUp from "../../hooks/usePopUp";
 import JoinGroupPopUp from "../../components/JoinGroupPopUp/JoinGroupPopUp";
+import CreateRoomPopUp from "../../components/CreateRoomPopUp/CreateRoomPopUp";
 
 function RoomLists() {
   const { rooms, userRooms, setUserRooms, newGroupMessage } = useContext(SessionContext);
@@ -12,6 +13,7 @@ function RoomLists() {
   const [currentRoom, setCurrentRoom] = useState(null);
   const [hasPassword, setHasPassword] = useState(false);
   const [isJoinOpen, openJoin, closeJoin] = usePopUp();
+  const [isCreateOpen, openCreate, closeCreate] = usePopUp();
 
   const handleJoinGroupChat = async (room) => {
     const hasPassword = await checkRoomPassword(room.jid);
@@ -29,6 +31,10 @@ function RoomLists() {
     setUserRooms((prevUserRooms) => [...prevUserRooms, { jid: currentRoom.jid, name: currentRoom.name, nickname: nick }]);
   }
 
+  const callBackCreate = (roomJid, roomName, nick) => {
+    setUserRooms((prevUserRooms) => [...prevUserRooms, { jid: roomJid, name: roomName, nickname: nick }]);
+  }
+
   const handleLeaveGroupChat = (roomJid) => {
     const room = userRooms.find(room => room.jid === roomJid);
     const usernickname = room?.nickname;
@@ -43,6 +49,7 @@ function RoomLists() {
 
   useEffect(() => {
     if (!currentRoom) return;
+    console.log(currentRoom);
     openJoin();
   }, [currentRoom]);
 
@@ -55,12 +62,18 @@ function RoomLists() {
       <JoinGroupPopUp
         isOpen={isJoinOpen}
         close={closePopUp}
-        jid={currentRoom?.jid}
+        roomJid={currentRoom?.jid}
         passRequired={hasPassword}
         callback={callBackJoin}
       />
+      <CreateRoomPopUp
+        isOpen={isCreateOpen}
+        close={closeCreate}
+        callback={callBackCreate}
+      />
       <div className={styles.userChatRoomsContainer}>
         <h3>Tus chatrooms</h3>
+        <button onClick={openCreate}>Crear</button>
         {userRooms.map((room, index) => (
           <div key={index} className={styles.roomContainer}>
             <div className={styles.roomData}>

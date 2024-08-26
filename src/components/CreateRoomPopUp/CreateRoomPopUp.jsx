@@ -1,26 +1,26 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import PopUp from "../PopUp/PopUp";
-import styles from './JoinGroupPopUp.module.css';
+import styles from './CreateRoomPopUp.module.css';
 import useStropheClient from "../../connection/StropheClient";
+import { XMPP_DOMAIN } from "../../connection/xmppConfig";
 
-function JoinGroupPopUp({
+function CreateRoomPopUp({
     close,
     isOpen,
-    roomJid,
-    passRequired,
     callback,
 }) {
 
+  const [roomName, setRoomName] = useState('')
   const [nickName, setNickName] = useState('')
   const [password, setPassword] = useState(null);
-  const { joinGroupChat, jid } = useStropheClient();
+  const { createGroupChat, jid } = useStropheClient();
 
   const handleSubmit = () => {
-    console.log(roomJid, nickName, password);
     const roomNick = nickName || jid;
-    joinGroupChat(roomJid, roomNick, password);
-    callback(roomNick);
+    const options = { password: password, persistent: true };
+    createGroupChat(roomName, roomNick, options);
+    callback(`${roomName}@conference.${XMPP_DOMAIN}`, roomName, roomNick);
     close();
   };
 
@@ -28,22 +28,25 @@ function JoinGroupPopUp({
     isOpen && (
         <PopUp close={close} maxWidth={400} closeButton>
             <div className={styles.subscribePopUpContainer}>
-                <h2>Enviar solicitud de suscripción</h2>
-                <p style={{ marginTop: '0' }}>Uniéndose a <strong>{roomJid}</strong></p>
+                <h2>Crear chatroom</h2>
+                <input
+                    type="text"
+                    placeholder="Nombre de la sala"
+                    value={roomName}
+                    onChange={(e) => setRoomName(e.target.value)}
+                />
                 <input
                     type="text"
                     placeholder="Nickname"
                     value={nickName}
                     onChange={(e) => setNickName(e.target.value)}
                 />
-                {passRequired && (
-                    <input
-                        type="text"
-                        placeholder="Contraseña"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                    />
-                )}
+                <input
+                    type="text"
+                    placeholder="Contraseña (Opcional)"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                />
                 <button onClick={handleSubmit}>Unirse</button>
             </div>
         </PopUp>
@@ -51,18 +54,18 @@ function JoinGroupPopUp({
   );
 }
 
-JoinGroupPopUp.propTypes = {
+CreateRoomPopUp.propTypes = {
     close: PropTypes.func.isRequired,
     isOpen: PropTypes.bool,
-    roomJid: PropTypes.string.isRequired,
+    jid: PropTypes.string.isRequired,
     passRequired: PropTypes.bool,
     callback: PropTypes.func,
 };
 
-JoinGroupPopUp.defaultProps = {
+CreateRoomPopUp.defaultProps = {
     isOpen: false,
     callback: () => {},
     passRequired: false,
 };
 
-export default JoinGroupPopUp;
+export default CreateRoomPopUp;

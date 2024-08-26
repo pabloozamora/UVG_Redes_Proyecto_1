@@ -1,19 +1,45 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect, useRef } from "react";
 import styles from "./ChatPage.module.css";
 import useStropheClient from "../../connection/StropheClient";
 import { useParams } from "react-router-dom";
 import SessionContext from "../../components/context/SessionContext";
+import uploadFile from "../../hooks/uploadFile";
 
 function ChatPage() {
     const { jid } = useParams();
     const [message, setMessage] = useState("");
-    const { sendMessage } = useStropheClient();
+    const { sendMessage, requestUploadSlot } = useStropheClient();
+    const [selectedFile, setSelectedFile] = useState(null);
     const { messagesByUser, setNewMessage } = useContext(SessionContext);
+    const fileInputRef = useRef(null);  // Crear una referencia para el input de tipo 'file'
     
-    const handleSendMessage = (e) => {
+    const handleSendMessage = async (e) => {
         e.preventDefault();
-        sendMessage(message, jid);
+
+        // Si hay un archivo seleccionado, primero súbelo
+        if (selectedFile) {
+            try {
+                const { putUrl, getUrl } = await requestUploadSlot(selectedFile.name, selectedFile.size);
+                console.log("Uploading file to:", putUrl);
+                await uploadFile(selectedFile, putUrl);
+
+                // Después de subir el archivo, envía el enlace en el mensaje
+                sendMessage(getUrl, jid);
+            } catch (error) {
+                console.error("Error uploading file:", error);
+            }
+        } else if (message) {
+            // Enviar mensaje de texto normal
+            sendMessage(message, jid);
+        }
+
         setMessage("");
+        setSelectedFile(null);  // Limpiar el archivo seleccionado después de enviarlo
+        fileInputRef.current.value = "";  // Limpiar el input de tipo 'file'
+    };
+
+    const handleFileChange = (e) => {
+        setSelectedFile(e.target.files[0]);
     };
 
     const handleNewMessage = () => {
@@ -34,14 +60,23 @@ function ChatPage() {
                 {messagesByUser[jid]?.map((msg, index) => (
                 <div
                     key={index}
-                    style={{ textAlign: msg.type === "sent" ? "right" : "left" }}
+                    style={{ textAlign: msg.type === "sent" ? "right" : "left", marginTop: "10px" }}
                 >
                     <strong>{msg.type === "sent" ? "Yo" : msg.from}</strong>:{" "}
-                    {msg.messageText}
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: msg.type === "sent" ? "flex-end" : "flex-start"}}>
+                        {msg.isImage && <img src={msg.messageText} alt="Image" style={{ maxWidth: '200px' }} />}
+                        {msg.messageText}
+                    </div>
                 </div>
                 ))}
             </div>
             <form className={styles.chatInput}>
+                <input 
+                    type="file" 
+                    onChange={handleFileChange}  // Manejar la selección del archivo
+                    style={{ marginTop: '10px' }}
+                    ref={fileInputRef}  // Asignar la referencia al input de tipo 'file'
+                />
                 <input
                 type="text"
                 placeholder="Message"

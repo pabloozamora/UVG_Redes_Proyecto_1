@@ -119,10 +119,15 @@ const useStropheClient = () => {
     let messageText = '';
     let type = msg.getAttribute('type');
 
+    const isImageUrl = (url) => {
+        return /\.(jpeg|jpg|gif|png)$/.test(url);
+    };
+
     if (body) {
       // Mensaje de chat convencional
 
       messageText = Strophe.getText(body);
+      const isImage = isImageUrl(messageText);
 
     if (type === 'groupchat') {
 
@@ -133,7 +138,7 @@ const useStropheClient = () => {
 
       setMessagesByGroup((prevMessagesByGroup) => {
         const groupMessages = prevMessagesByGroup[groupChat] || [];
-        return { ...prevMessagesByGroup, [groupChat]: [...groupMessages, { username, messageText, type: 'groupchat' }] };
+        return { ...prevMessagesByGroup, [groupChat]: [...groupMessages, { username, messageText, type: 'groupchat', isImage }] };
       });
 
       setNewGroupMessage((prevNewGroupMessage) => {
@@ -147,7 +152,7 @@ const useStropheClient = () => {
 
       setMessagesByUser((prevMessagesByUser) => {
         const userMessages = prevMessagesByUser[from] || [];
-        return { ...prevMessagesByUser, [from]: [...userMessages, { from, messageText, type: 'chat' }] };
+        return { ...prevMessagesByUser, [from]: [...userMessages, { from, messageText, type: 'chat', isImage }] };
       });
 
       setNewMessage((prevNewMessage) => {
@@ -250,12 +255,19 @@ const useStropheClient = () => {
   };
 
   const sendMessage = (message, to) => {
+
+    const isImageUrl = (url) => {
+      return /\.(jpeg|jpg|gif|png)$/.test(url);
+    };
+
+    const isImage = isImageUrl(message);
+
     const messageStanza = $msg({ to, type: 'chat' }).c('body').t(message);
     connection.send(messageStanza.tree());
 
     setMessagesByUser((prevMessagesByUser) => {
       const userMessages = prevMessagesByUser[to] || [];
-      return { ...prevMessagesByUser, [to]: [...userMessages, { from: jid, messageText: message, type: 'sent' }] };
+      return { ...prevMessagesByUser, [to]: [...userMessages, { from: jid, messageText: message, type: 'sent', isImage }] };
     });
   };
 
@@ -319,7 +331,13 @@ const useStropheClient = () => {
   };
 
   const sendGroupMessage = (roomJid, message) => {
-    const messageStanza = $msg({ to: roomJid, type: 'groupchat' })
+    const isImageUrl = (url) => {
+      return /\.(jpeg|jpg|gif|png)$/.test(url);
+    };
+
+    const isImage = isImageUrl(message);
+
+    const messageStanza = $msg({ to: roomJid, type: 'groupchat', })
       .c('body').t(message);
     
     connection.send(messageStanza.tree());
@@ -357,6 +375,65 @@ const useStropheClient = () => {
     connection.send(presenceStanza.tree());
   };
 
+  const createGroupChat = async (roomName, nickname, options = {}) => {
+    const roomJid = `${roomName}@conference.${XMPP_DOMAIN}`;
+  
+    // Unirse a la sala para crearla (XMPP crea la sala automáticamente si no existe)
+    let presenceStanza = $pres({ to: `${roomJid}/${nickname}` })
+      .c('x', { xmlns: 'http://jabber.org/protocol/muc' });
+  
+    connection.send(presenceStanza.tree());
+  
+    // Configurar la sala (si es necesario) enviando un IQ "set"
+    return new Promise((resolve, reject) => {
+      const iq = $iq({ to: roomJid, type: 'set' })
+        .c('query', { xmlns: 'http://jabber.org/protocol/muc#owner' })
+        .c('x', { xmlns: 'jabber:x:data', type: 'submit' });
+  
+      // Ejemplo: Configurar la sala como persistente y protegida por contraseña
+      iq.c('field', { var: 'muc#roomconfig_persistentroom' })
+        .c('value').t(options.persistent ? '1' : '0').up()
+        .up();
+  
+      if (options.password) {
+        iq.c('field', { var: 'muc#roomconfig_passwordprotectedroom' })
+          .c('value').t('1').up()
+          .up()
+          .c('field', { var: 'muc#roomconfig_roomsecret' })
+          .c('value').t(options.password).up()
+          .up();
+      }
+  
+      connection.sendIQ(iq, (response) => {
+        console.log('Room created and configured:', roomJid);
+        resolve(roomJid);
+      }, (error) => {
+        console.error('Failed to create room:', error);
+        reject(error);
+      });
+    });
+  };
+
+  const requestUploadSlot = async (fileName, fileSize) => {
+    return new Promise((resolve, reject) => {
+      const iq = $iq({ type: 'get', to: 'httpfileupload.alumchat.lol' })
+        .c('request', { xmlns: 'urn:xmpp:http:upload:0', filename: fileName, size: fileSize });
+  
+      connection.sendIQ(iq, (response) => {
+        const slot = response.getElementsByTagName('slot')[0];
+        const putUrl = slot.getElementsByTagName('put')[0].getAttribute('url');  // Obtener la URL del atributo 'url'
+        const getUrl = slot.getElementsByTagName('get')[0].getAttribute('url');
+
+        console.log('PUT URL:', putUrl);
+        resolve({ putUrl, getUrl });
+      }, (error) => {
+        reject('Failed to get upload slot: ' + error);
+      });
+    });
+  };
+
+  
+
   return {
     jid,
     setJid,
@@ -374,6 +451,8 @@ const useStropheClient = () => {
     sendGroupMessage,
     checkRoomPassword,
     leaveGroupChat,
+    createGroupChat,
+    requestUploadSlot,
   };
 };
 

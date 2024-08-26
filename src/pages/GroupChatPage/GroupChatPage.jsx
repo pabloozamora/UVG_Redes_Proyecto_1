@@ -1,22 +1,48 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect, useRef } from "react";
 import styles from "./GroupChatPage.module.css";
 import useStropheClient from "../../connection/StropheClient";
 import { useParams } from "react-router-dom";
 import SessionContext from "../../components/context/SessionContext";
+import uploadFile from "../../hooks/uploadFile";
 
 function GroupChatPage() {
     const { jid } = useParams();
     const [message, setMessage] = useState("");
-    const { sendGroupMessage } = useStropheClient();
+    const [selectedFile, setSelectedFile] = useState(null);
+    const fileInputRef = useRef(null);  // Crear una referencia para el input de tipo 'file'
+    const { sendGroupMessage, requestUploadSlot } = useStropheClient();
     const { messagesByGroup, setNewGroupMessage, userRooms } = useContext(SessionContext);
 
     const room = userRooms.find(room => room.jid === jid);
     const usernickname = room?.nickname;
     
-    const handleSendMessage = (e) => {
+    const handleSendMessage = async (e) => {
         e.preventDefault();
-        sendGroupMessage(jid, message);
+
+        // Si hay un archivo seleccionado, primero súbelo
+        if (selectedFile) {
+            try {
+                const { putUrl, getUrl } = await requestUploadSlot(selectedFile.name, selectedFile.size);
+                console.log("Uploading file to:", putUrl);
+                await uploadFile(selectedFile, putUrl);
+
+                // Después de subir el archivo, envía el enlace en el mensaje
+                sendGroupMessage(jid, getUrl);
+            } catch (error) {
+                console.error("Error uploading file:", error);
+            }
+        } else if (message) {
+            // Enviar mensaje de texto normal
+            sendGroupMessage(jid, message);
+        }
+
         setMessage("");
+        setSelectedFile(null);  // Limpiar el archivo seleccionado después de enviarlo
+        fileInputRef.current.value = "";  // Limpiar el input de tipo 'file'
+    };
+
+    const handleFileChange = (e) => {
+        setSelectedFile(e.target.files[0]);
     };
 
     const handleNewMessage = () => {
@@ -37,14 +63,23 @@ function GroupChatPage() {
                 {messagesByGroup[jid]?.map((msg, index) => (
                 <div
                     key={index}
-                    style={{ textAlign: msg.username === usernickname ? "right" : "left" }}
+                    style={{ textAlign: msg.username === usernickname ? "right" : "left", marginTop: "10px" }}
                 >
                     <strong>{msg.username === usernickname ? "Yo" : msg.username}</strong>:{" "}
-                    {msg.messageText}
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: msg.username === usernickname ?'flex-end' : 'flex-start' }}>
+                        {msg.isImage && <img src={msg.messageText} alt="Image" style={{ maxWidth: '200px' }} />}
+                        {msg.messageText}
+                    </div>
                 </div>
                 ))}
             </div>
             <form className={styles.chatInput}>
+                <input 
+                    type="file" 
+                    onChange={handleFileChange}  // Manejar la selección del archivo
+                    style={{ marginTop: '10px' }}
+                    ref={fileInputRef}  // Asignar la referencia al input de tipo 'file'
+                />
                 <input
                 type="text"
                 placeholder="Message"
