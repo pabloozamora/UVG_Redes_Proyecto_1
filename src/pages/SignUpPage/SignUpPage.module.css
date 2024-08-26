@@ -5,13 +5,3 @@
     align-items: center;
     width: 100%;;
 }
-
-.registerButton {
-    margin-top: 20px;
-    align-self: center;
-    cursor: pointer;
-}
-
-.registerButton:hover {
-    font-weight: bold;
-}

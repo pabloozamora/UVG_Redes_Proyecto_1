@@ -6,6 +6,8 @@ import IndexPage from './pages/IndexPage'
 
 function App() {
 
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
   return (
     <SessionProvider>
       <Router>

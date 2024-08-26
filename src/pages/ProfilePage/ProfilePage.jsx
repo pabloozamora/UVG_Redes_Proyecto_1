@@ -4,8 +4,8 @@ import SessionContext from "../../components/context/SessionContext";
 import useStropheClient from "../../connection/StropheClient";
 
 function ProfilePage() {
-    const { jid, userPresence } = useContext(SessionContext);
-    const { updateMyPresence, fetchMyNickname, updateMyNickname } = useStropheClient();
+    const { jid, userPresence, setLoggedIn } = useContext(SessionContext);
+    const { updateMyPresence, fetchMyNickname, updateMyNickname, deleteAccount } = useStropheClient();
     
     const [nickname, setNickname] = useState('');  // Estado para el nickname
     const [status, setStatus] = useState(userPresence.status);  // Estado para el mensaje de estado
@@ -38,6 +38,20 @@ function ProfilePage() {
             handleUpdateNickname();  // Actualizar el nickname si no está vacío
         }
     };
+
+    const handleDeleteAccount = async () => {
+        try {
+          const confirmation = window.confirm("¿Estás seguro de que deseas eliminar tu cuenta? Esta acción no se puede deshacer.");
+          if (confirmation) {
+            await deleteAccount();
+            alert("Cuenta eliminada con éxito");
+            setLoggedIn(false);
+          }
+        } catch (error) {
+          console.error(error);
+          alert("Ocurrió un error al intentar eliminar la cuenta.");
+        }
+      };
 
     useEffect(() => {
         setStatus(userPresence.status);
@@ -108,6 +122,7 @@ function ProfilePage() {
                     Actualizar Presencia
                 </button>
             </div>
+            <button className={styles.deleteAccountButton} onClick={handleDeleteAccount}>Eliminar cuenta</button>
         </div>
     );
 }

@@ -498,6 +498,26 @@ const useStropheClient = () => {
     });
   };
 
+  const deleteAccount = () => {
+    return new Promise((resolve, reject) => {
+      const iq = $iq({ type: 'set', to: XMPP_DOMAIN })
+        .c('query', { xmlns: 'jabber:iq:register' })
+        .c('remove'); // Indica que deseas eliminar la cuenta
+  
+      connection.sendIQ(iq, (response) => {
+        if (response.getAttribute('type') === 'result') {
+          console.log('Account deleted successfully');
+          resolve('Account deleted successfully');
+          handleDisconnect(); // Desconecta al usuario tras eliminar la cuenta
+        } else {
+          reject('Failed to delete account');
+        }
+      }, (error) => {
+        reject('Failed to delete account: ' + error);
+      });
+    });
+  };
+
 
   return {
     jid,
@@ -521,6 +541,7 @@ const useStropheClient = () => {
     updateMyPresence,
     fetchMyNickname,
     updateMyNickname,
+    deleteAccount,
   };
 };
 

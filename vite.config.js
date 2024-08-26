@@ -8,14 +8,13 @@ export default defineConfig({
   resolve: {
     alias: {
       'strophe.js': path.resolve(__dirname, 'node_modules/strophe.js'),
-    }
-  },
-  optimizeDeps: {
-    esbuildOptions: {
-        // Node.js global to browser globalThis
-        define: {
-            global: 'globalThis',
-        },
     },
-},
+    mainFields: ['main', 'browser'],
+  },
+  define: {
+    'process.env': {},
+    global: {},
+    "global.WebSocket": "window.WebSocket",
+    "global.btoa": "window.btoa.bind(window)",
+  },
 })

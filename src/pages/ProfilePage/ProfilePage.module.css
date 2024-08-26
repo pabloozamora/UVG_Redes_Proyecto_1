@@ -62,3 +62,9 @@
     gap: 10px;
     align-items: center;
 }
+
+.deleteAccountButton {
+    margin-top: 20px;
+    background-color: rgb(211, 10, 10);
+    max-width: 200px;
+}

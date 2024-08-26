@@ -1,131 +1,68 @@
 // useXmppClient.js
-import { useState, useEffect } from 'react';
-import { client, xml } from '@xmpp/client';
+import { client, xml } from '@xmpp/client/browser';
 import { WEBSOCKET_SERVICE, XMPP_DOMAIN } from './xmppConfig';
 
 const useXmppClient = () => {
-  const [chatMessages, setChatMessages] = useState([]);
-  const [jid, setJid] = useState('');
-  const [password, setPassword] = useState('');
-  const [loggedIn, setLoggedIn] = useState(false);
 
-  /* const initializeXmpp = (username, password) => {
-    xmpp = client({
-      service: WEBSOCKET_SERVICE,
-      domain: XMPP_DOMAIN,
-      username: username,
-      password: password,
-      resource: 'example',
-    });
-
-    xmpp.on('error', (err) => {
-      console.error('❌', err.toString());
-    });
-
-    xmpp.on('offline', () => {
-      console.log('⏹', 'offline');
-    });
-
-    xmpp.on('stanza', (stanza) => {
-      if (stanza.is('message')) {
-        const from = stanza.attrs.from;
-        const body = stanza.getChildText('body');
-        setChatMessages((prevMessages) => [...prevMessages, { from, messageText: body }]);
-      }
-    });
-
-    xmpp.on('online', async (address) => {
-      console.log('▶️', 'online as', address.toString());
-      await xmpp.send(xml('presence'));
-      setLoggedIn(true);
-    });
-
-    xmpp.on('status', (status) => {
-      console.log('status', status);
-    });
-  };
-
-  useEffect(() => {
-    initializeXmpp('test1234', 'test1234');
-  }, []); */
-
-  const handleSignUp = () => {
+  const handleSignUp = (user, password) => {
     try {
+      const xmppClient = client({
+        service: WEBSOCKET_SERVICE,
+        resource: '',
+      });
 
-      const socket = new WebSocket('ws://alumchat.lol:7070/ws', 'xmpp');
+      return new Promise((resolve, reject) => {
+        xmppClient.on('error', (err) => {
+          if (err.code === 'ECONERROR') {
+            console.error('Error de conexión', err);
+            xmppClient.stop();
+            xmppClient.removeAllListeners();
+            reject({ status: false, message: 'Error en el cliente XMPP' });
+          }
+        });
 
-      socket.onopen = () => {
-
-        console.log('Conexión abierta');
-
-        // Enviar declaración del encabezado XML y la estanza inicial
-        const openStream = `
-          <stream:stream 
-            to="${XMPP_DOMAIN}" 
-            xmlns="jabber:client" 
-            xmlns:stream="http://etherx.jabber.org/streams" 
-            xml:lang="en"
-            version="1.0">
-        `;
-        console.log('Enviando mensaje de apertura:', openStream);
-        socket.send(openStream.trim());
-        
-      };
-
-      socket.onmessage = (message) => {
-        console.log('Mensaje recibido:', message.data);
-        if (message.data.includes('<stream:features')) {
-          console.log('Características del stream recibidas');
+        xmppClient.on('open', () => {
+          console.log('Connection established');
+          const iq = xml(
+            'iq',
+            { type: 'set', to: XMPP_DOMAIN, id: 'register' },
+            xml(
+              'query',
+              { xmlns: 'jabber:iq:register' },
+              xml('username', {}, user),
+              xml('password', {}, password)
+            )
+          );
+          xmppClient.send(iq);
+        });
   
-        }
-  
-        // Manejar la respuesta de registro
-        if (message.data.includes('<iq') && message.data.includes('jabber:iq:register')) {
-          console.log('Respuesta de registro recibida:', message.data);
-          // Aquí podrías manejar la respuesta y completar el registro
-        }
-  
-        // Manejar errores
-        if (message.data.includes('<stream:error')) {
-          console.error('Error de stream:', message.data);
-        }
-      };
+        xmppClient.on('stanza', async (stanza) => {
+          if (stanza.is('iq') && stanza.getAttr("id") === "register") {
+            console.log('Registro exitoso');
+            await xmppClient.stop();
+            xmppClient.removeAllListeners();
+            if (stanza.getAttr("type") === "result") {
+              resolve({ status: true, message: 'Registro exitoso. Ahora puedes hacer login.' });
+            } else if (stanza.getAttr("type") === "error") {
+              console.log('Error en registro', stanza);
+              const error = stanza.getChild("error");
+              if (error?.getChild("conflict")) {
+                reject({ status: false, message: 'El usuario ya está en uso.' });
+              }
+              reject({ status: false, message: 'Ocurrió un error en tu registro. Intenta nuevamente' });
+            }
+          }
+        });
 
-      socket.onclose = () => {
-        console.log('Conexión cerrada');
-      };
-
-      socket.onerror = (error) => {
-        console.error('Error:', error);
-      };
-
+        xmppClient.start().catch((err) => { reject({ status: 'failed', message: `Error de cliente: ${err}` }); });
+      });
     } catch (error) {
-      console.error('❌ Registro fallido', error);
+      console.error('❌ Error en el registro', error);
+      throw error;
     }
-  };
-
-  /* const handleConnect = async () => {
-    try {
-      initializeXmpp(jid, password);
-
-      await xmpp.start();
-    } catch (error) {
-      console.error('❌ Conexión fallida', error);
-    }
-  }; */
-
-  /* const sendMessage = async (message, to) => {
-    const messageStanza = xml('message', { to, type: 'chat' }, xml('body', {}, message));
-    await xmpp.send(messageStanza);
-  }; */
+  }
 
   return {
-    chatMessages,
-    jid,
-    setJid,
-    password,
-    setPassword,
-    loggedIn,
     handleSignUp,
   };
 };
