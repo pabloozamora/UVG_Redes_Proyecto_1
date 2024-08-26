@@ -24,8 +24,8 @@ function SessionProvider({ children }) {
     const [userPresence, setUserPresence] = useState({});
 
     useEffect(() => {
-      console.log(userRooms);
-    }, [userRooms]);
+      console.log(messagesByUser);
+    }, [messagesByUser]);
 
     const data = {
         connection,

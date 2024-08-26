@@ -9,7 +9,7 @@ function UsersPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [users, setUsers] = useState([]);
   const [error, setError] = useState(null);
-  const { pubSubs, contacts, subRequestsSent } = useContext(SessionContext);
+  const { pubSubs, contacts, subRequestsSent, jid } = useContext(SessionContext);
 
   const handleSearch = async () => {
     try {
@@ -47,6 +47,7 @@ function UsersPage() {
       <div className={styles.usersList}>
         {users.map((user, index) => {
             const contact = isContact(user.jid);
+            if (user.jid === jid) return;
             return (
             <Contact
                 key={index}
