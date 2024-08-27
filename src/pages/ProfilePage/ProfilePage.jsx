@@ -3,6 +3,10 @@ import styles from './ProfilePage.module.css';
 import SessionContext from "../../components/context/SessionContext";
 import useStropheClient from "../../connection/StropheClient";
 
+/**
+ * Función que renderiza la página de perfil
+ * @returns {JSX.Element} - Página de perfil
+ */
 function ProfilePage() {
     const { jid, userPresence, setLoggedIn } = useContext(SessionContext);
     const { updateMyPresence, fetchMyNickname, updateMyNickname, deleteAccount } = useStropheClient();

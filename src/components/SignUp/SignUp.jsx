@@ -3,6 +3,11 @@ import styles from './SignUp.module.css';
 import useXmppClient from '../../connection/XMPPClient';
 import PropTypes from 'prop-types';
 
+/**
+ * Función que renderiza un componente de registro
+ * @param {setSignUp} setSignUp - Función para cambiar el estado de registro
+ * @returns {JSX.Element} - Componente de registro
+ */
 const SignUp = ({ setSignUp }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');

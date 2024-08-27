@@ -1,3 +1,8 @@
+/**
+ * Helper para subir un archivo a un servidor
+ * @param {*} file: Archivo a subir
+ * @param {string} putUrl: URL de subida
+ */
 const uploadFile = async (file, putUrl) => {
     try {
       const response = await fetch(putUrl, {

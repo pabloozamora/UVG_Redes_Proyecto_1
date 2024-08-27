@@ -1,8 +1,8 @@
 import { useState } from 'react';
 
 /**
- *
- * @param  initialValue
+ * Hook para manejar un PopUp
+ * @param {boolean} initialValue: Estado inicial del PopUp
  * @returns [isOpen, function open, function close]
  */
 const usePopUp = (initialValue = false) => {

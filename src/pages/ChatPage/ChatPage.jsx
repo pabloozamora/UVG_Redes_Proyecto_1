@@ -5,6 +5,10 @@ import { useParams } from "react-router-dom";
 import SessionContext from "../../components/context/SessionContext";
 import uploadFile from "../../hooks/uploadFile";
 
+/**
+ * Función que renderiza la página de Chat privado
+ * @returns {JSX.Element} - Componente ChatPage
+ */
 function ChatPage() {
     const { jid } = useParams();
     const [message, setMessage] = useState("");

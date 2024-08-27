@@ -7,6 +7,10 @@ import usePopUp from "../../hooks/usePopUp";
 import JoinGroupPopUp from "../../components/JoinGroupPopUp/JoinGroupPopUp";
 import CreateRoomPopUp from "../../components/CreateRoomPopUp/CreateRoomPopUp";
 
+/**
+ * Función que renderiza la página de lista de salas
+ * @returns {JSX.Element} - Componente RoomLists
+ */
 function RoomLists() {
   const { rooms, userRooms, setUserRooms, newGroupMessage, newGroupChat, setNewGroupChat } = useContext(SessionContext);
   const { fetchGroupChats, checkRoomPassword, leaveGroupChat } = useStropheClient();

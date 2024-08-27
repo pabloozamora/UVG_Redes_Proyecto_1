@@ -2,6 +2,10 @@
 import { client, xml } from '@xmpp/client/browser';
 import { WEBSOCKET_SERVICE, XMPP_DOMAIN } from './xmppConfig';
 
+/**
+ *  Hook para manejar el cliente XMPP
+ * @returns {Object} - Funciones para manejar el cliente XMPP
+ */
 const useXmppClient = () => {
 
   const handleSignUp = (user, password) => {

@@ -3,6 +3,10 @@ import SessionContext from "../../components/context/SessionContext";
 import Contact from "../../components/Contact/Contact";
 import styles from "./ChatsList.module.css";
 
+/**
+ * Función que renderiza la lista de chats activos
+ * @returns {JSX.Element} - Componente ChatsList
+ */
 function ChatsList() {
 	const { messagesByUser, newMessage, newPrivateChat, setNewPrivateChat } = useContext(SessionContext);
 

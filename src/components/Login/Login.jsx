@@ -3,6 +3,10 @@ import React, { useState } from 'react';
 import useStropheClient from '../../connection/StropheClient';
 import styles from './Login.module.css';
 
+/**
+ * Función que renderiza un componente de inicio de sesión
+ * @returns {JSX.Element} - Componente de inicio de sesión
+ */
 const Login = () => {
   const {
     jid,

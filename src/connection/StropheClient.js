@@ -4,6 +4,10 @@ import SessionContext from '../components/context/SessionContext';
 import { useNavigate } from 'react-router-dom';
 import { XMPP_DOMAIN } from './xmppConfig';
 
+/**
+ * Hook para manejar la conexión con el servidor XMPP.
+ * @returns {Object} - Funciones para manejar la conexión con el servidor XMPP.
+ */
 const useStropheClient = () => {
   const {
     connection,
@@ -29,12 +33,19 @@ const useStropheClient = () => {
 
   const navigate = useNavigate();
 
-  // Función para obtener el JID sin el recurso
+  /**
+    * Función para obtener el JID sin recurso.
+    * @param {string} jid - JID completo con recurso.
+    * @returns {string} - JID sin recurso.
+   */
   const getBareJid = (jid) => {
     return jid.split('/')[0];
   };
 
-  // Función para obtener la presencia del usuario conectado
+  /** 
+   * Función que obtiene el JID del usuario conectado
+   * @returns {string} - JID del usuario conectado.
+   */
   const getMyPresence = () => {
     const myJid = jid; // Usar el JID del usuario conectado
     const iq = $iq({ type: 'get', to: myJid })
@@ -55,6 +66,10 @@ const useStropheClient = () => {
     });
   };
 
+  /**
+   * Función para obtener los contactos del usuario conectado.
+   * @returns {void}
+   */
   const fetchContacts = () => {
     const iq = $iq({ type: 'get', id: 'roster1' }).c('query', { xmlns: 'jabber:iq:roster' });
     connection.sendIQ(iq, (iqResponse) => {
@@ -75,6 +90,10 @@ const useStropheClient = () => {
     });
   };
 
+  /**
+   * Handler para manejar las stanzas de presencia y actualizar el estado de los contactos.
+   * @param {Element} presence - Estrofa de presencia recibida. 
+   */
   const onPresence = (presence) => {
     const type = presence.getAttribute('type');
     const from = presence.getAttribute('from');
@@ -86,16 +105,20 @@ const useStropheClient = () => {
     console.log('STATUS:', status);
 
     if (type === 'subscribe') {
+      // Manejar solicitud de suscripción
+
       const statusNode = presence.getElementsByTagName('status')[0];
       const status = statusNode ? statusNode.textContent : null;
       console.log(`${from} quiere suscribirse a tu presencia.`);
       setSubRequests((prevSubRequests) => [...prevSubRequests, { from, status }]);
 
     } else if (type === 'subscribed') {
+      // Manejar aceptación de solicitud de suscripción
       console.log(`${from} ha aceptado tu solicitud de suscripción.`);
       setSubRequestsSent((prevSubRequestsSent) => prevSubRequestsSent.filter((jid) => jid !== from));
 
     } else if (type === 'unsubscribed') {
+      // Manejar rechazo de solicitud de suscripción
       console.log(`${from} ha rechazado tu solicitud de suscripción.`);
       setSubRequestsSent((prevSubRequestsSent) => prevSubRequestsSent.filter((jid) => jid !== from));
 
@@ -114,7 +137,7 @@ const useStropheClient = () => {
         status = null;
       }
   
-      // Aquí podrías actualizar el estado del contacto en tu UI
+      // Actualizar el estado de presencia en el estado de la aplicación
       setPubSubs((prevPubSubs) => {
           const userPubSub = prevPubSubs[bareJid] || {}; // Obtener los datos existentes o un objeto vacío
   
@@ -136,6 +159,10 @@ const useStropheClient = () => {
     return true;
   };
 
+  /**
+   * Handler para mensajes entrantes.
+   * @param {Element} msg - Estrofa de mensaje recibida.
+   */
   const onMessage = (msg) => {
     let from = msg.getAttribute('from');
     const body = msg.getElementsByTagName('body')[0];
@@ -160,6 +187,7 @@ const useStropheClient = () => {
       const groupChat = from.split('/')[0];
       const username = from.split('/')[1];
 
+      // Actualizar los mensajes de grupo en el estado
       setMessagesByGroup((prevMessagesByGroup) => {
         const groupMessages = prevMessagesByGroup[groupChat] || [];
         return { ...prevMessagesByGroup, [groupChat]: [...groupMessages, { username, messageText, type: 'groupchat', isImage }] };
@@ -176,6 +204,7 @@ const useStropheClient = () => {
       from = getBareJid(from);
       console.log(`Private message from ${from}: ${messageText}`);
 
+      // Actualizar los mensajes privados en el estado
       setMessagesByUser((prevMessagesByUser) => {
         const userMessages = prevMessagesByUser[from] || [];
         return { ...prevMessagesByUser, [from]: [...userMessages, { from, messageText, type: 'chat', isImage }] };
@@ -232,6 +261,10 @@ const useStropheClient = () => {
     return true;
   };
 
+  /**
+   * Handler para manejar los estados de conexión.
+   * @param {Element} status 
+   */
   const onConnect = (status) => {
     if (status === Strophe.Status.CONNECTING) {
       console.log('Connecting...');
@@ -252,6 +285,9 @@ const useStropheClient = () => {
     }
   };
 
+  /**
+   * Función para manejar la conexión al servidor XMPP.
+   */
   const handleConnect = (e) => {
     e.preventDefault();
     console.log('jid', jid);
@@ -259,6 +295,9 @@ const useStropheClient = () => {
     connection.connect(jid, password, onConnect);
   };
 
+  /**
+   * Función para manejar la desconexión del servidor XMPP.
+   */
   const handleDisconnect = () => {
 
     if (connection) {
@@ -283,6 +322,11 @@ const useStropheClient = () => {
     connection.disconnect();
   };
 
+  /**
+   * Función para enviar un mensaje a un usuario.
+   * @param {string} message: Mensaje a enviar
+   * @param {string} to: JID del destinatario
+   */
   const sendMessage = (message, to) => {
 
     const isImageUrl = (url) => {
@@ -300,16 +344,29 @@ const useStropheClient = () => {
     });
   };
 
+  /**
+   * Función para aceptar una solicitud de suscripción.
+   * @param {string} from: JID del remitente de la solicitud.
+   */
   const handleAcceptSubscription = (from) => {
     connection.send($pres({ to: from, type: 'subscribed' }));
     setSubRequests((prevSubRequests) => prevSubRequests.filter((request) => request.from !== from));
   };
 
+  /**
+   * Función para rechazar una solicitud de suscripción.
+   * @param {string} from: JID del remitente de la solicitud.
+   */
   const handleRejectSubscription = (from) => {
     connection.send($pres({ to: from, type: 'unsubscribed' }));
     setSubRequests((prevSubRequests) => prevSubRequests.filter((request) => request.from !== from));
   }
 
+  /**
+   * Función para enviar una solicitud de suscripción a un usuario.
+   * @param {string} to: JID del destinatario.
+   * @param {string} message: Mensaje personalizado. 
+   */
   const sendSubscriptionRequest = (to, message) => {
     // Crear la estrofa de presencia con la solicitud de suscripción y el mensaje
     const presenceStanza = $pres({ to, type: 'subscribe' })
@@ -322,6 +379,9 @@ const useStropheClient = () => {
     setSubRequestsSent((prevSubRequestsSent) => [...prevSubRequestsSent, to]);
   };
 
+  /**
+   * Función para obtener los chats grupales.
+   */
   const fetchGroupChats = () => {
     const serviceJid = `conference.${XMPP_DOMAIN}`;
   
@@ -345,6 +405,12 @@ const useStropheClient = () => {
     });
   };
 
+  /**
+   * Función para unirse a un chat grupal.
+   * @param {string} roomJid: JID de la sala.
+   * @param {string} nickname: Nickname que el usuario desea usar en la sala.
+   * @param {string} password: Contraseña de la sala (opcional).
+   */
   const joinGroupChat = (roomJid, nickname, password = null) => {
     // Crear la estrofa de presencia para unirse a la sala
     let presenceStanza = $pres({ to: `${roomJid}/${nickname}` })
@@ -359,6 +425,11 @@ const useStropheClient = () => {
     connection.send(presenceStanza.tree());
   };
 
+  /**
+   * Función para enviar un mensaje a un chat grupal.
+   * @param {string} roomJid: JID de la sala.
+   * @param {string} message: Mensaje a enviar.
+   */
   const sendGroupMessage = (roomJid, message) => {
     const isImageUrl = (url) => {
       return /\.(jpeg|jpg|gif|png)$/.test(url);
@@ -372,6 +443,10 @@ const useStropheClient = () => {
     connection.send(messageStanza.tree());
   };
 
+  /**
+   * Función para verificar si una sala de chat está protegida por contraseña.
+   * @param {string} roomJid: JID de la sala.
+   */
   const checkRoomPassword = async (roomJid) => {
     return new Promise((resolve, reject) => {
       const iq = $iq({ to: roomJid, type: 'get' })
@@ -396,6 +471,11 @@ const useStropheClient = () => {
     });
   };
 
+  /**
+   * Función para salir de un chat grupal.
+   * @param {string} roomJid: JID de la sala.
+   * @param {string} nickname: Nickname del usuario en la sala.
+   */
   const leaveGroupChat = (roomJid, nickname) => {
     // Crear la estrofa de presencia con type="unavailable" para salir de la sala
     const presenceStanza = $pres({ to: `${roomJid}/${nickname}`, type: 'unavailable' });
@@ -404,6 +484,14 @@ const useStropheClient = () => {
     connection.send(presenceStanza.tree());
   };
 
+
+  /**
+   * Función para crear un chat grupal.
+   * @param {string} roomName: Nombre de la sala.
+   * @param {string} nickname: Nickname del usuario en la sala.
+   * @param {object} options: Opciones de configuración de la sala.
+   * @returns 
+   */
   const createGroupChat = async (roomName, nickname, options = {}) => {
     const roomJid = `${roomName}@conference.${XMPP_DOMAIN}`;
   
@@ -419,7 +507,7 @@ const useStropheClient = () => {
         .c('query', { xmlns: 'http://jabber.org/protocol/muc#owner' })
         .c('x', { xmlns: 'jabber:x:data', type: 'submit' });
   
-      // Ejemplo: Configurar la sala como persistente y protegida por contraseña
+      // Configurar la sala como persistente
       iq.c('field', { var: 'muc#roomconfig_persistentroom' })
         .c('value').t(options.persistent ? '1' : '0').up()
         .up();
@@ -443,6 +531,12 @@ const useStropheClient = () => {
     });
   };
 
+  /**
+   * Función para solicitar un slot de carga al servidor para subir un archivo.
+   * @param {string} fileName: Nombre del archivo.
+   * @param {number} fileSize: Tamaño del archivo en bytes.
+   * @returns 
+   */
   const requestUploadSlot = async (fileName, fileSize) => {
     return new Promise((resolve, reject) => {
       const iq = $iq({ type: 'get', to: 'httpfileupload.alumchat.lol' })
@@ -461,6 +555,11 @@ const useStropheClient = () => {
     });
   };
 
+  /**
+   * Función para actualizar la presencia del usuario.
+   * @param {string} show: Nuevo estado de presencia.
+   * @param {string} status: Nuevo mensaje de estado.
+   */
   const updateMyPresence = (show, status) => {
     const presenceStanza = $pres()
       .c('show').t(show).up()
@@ -468,6 +567,9 @@ const useStropheClient = () => {
     connection.send(presenceStanza.tree());
   };
 
+  /**
+   * Función para obtener el nickname del usuario.
+   */
   const fetchMyNickname = () => {
     return new Promise((resolve, reject) => {
       const iq = $iq({ type: 'get' })  // Eliminar el "to: jid" ya que no es necesario para obtener el propio nickname
@@ -489,6 +591,10 @@ const useStropheClient = () => {
     });
   };
 
+  /**
+   * Función para actualizar el nickname del usuario.
+   * @param {string} newNickname: Nuevo nickname.
+   */
   const updateMyNickname = (newNickname) => {
     return new Promise((resolve, reject) => {
       const iq = $iq({ type: 'set' })  // Eliminamos 'to: jid'
@@ -504,6 +610,9 @@ const useStropheClient = () => {
     });
   };
 
+  /**
+   * Función para eliminar la cuenta del usuario.
+   */
   const deleteAccount = () => {
     return new Promise((resolve, reject) => {
       const iq = $iq({ type: 'set', to: XMPP_DOMAIN })
@@ -524,6 +633,11 @@ const useStropheClient = () => {
     });
   };
 
+  /**
+   * Función para buscar usuarios por nombre de usuario o email.
+   * @param {string} searchTerm: Término de búsqueda.
+   * @returns 
+   */
   const fetchAllUsers = (searchTerm = '') => {
     return new Promise((resolve, reject) => {
       const iq = $iq({ type: 'set', to: 'search.alumchat.lol' })
@@ -553,6 +667,10 @@ const useStropheClient = () => {
     });
   };
   
+  /**
+   * Función para obtener los campos de búsqueda disponibles.
+   * @returns {Promise} - Promesa con los campos de búsqueda.
+   */
   const fetchSearchFields = () => {
     return new Promise((resolve, reject) => {
       const iq = $iq({ type: 'get', to: 'search.alumchat.lol' })
@@ -576,6 +694,11 @@ const useStropheClient = () => {
     });
   };
 
+  /**
+   * Función para búsqueda avanzada de usuarios.
+   * @param {string} searchTerm: Término de búsqueda.
+   * @returns {Promise} - Promesa con los usuarios encontrados.
+   */
   const searchUsersAdvanced = (searchTerm) => {
     return new Promise((resolve, reject) => {
       const iq = $iq({ type: 'set', to: 'search.alumchat.lol' })

@@ -3,6 +3,16 @@ import PropTypes from 'prop-types';
 import styles from './Contact.module.css';
 import { Link } from "react-router-dom";
 
+/**
+ * Función que renderiza un componente Contacto
+ * @param {String} jid - JID del contacto
+ * @param {String} status - Estado del contacto
+ * @param {Boolean} newMessage - Indica si hay mensajes nuevos
+ * @param {String} nick - Nickname del contacto
+ * @param {Function} requestFollow - Función para solicitar seguir al contacto
+ * @param {Boolean} subRequestSent - Indica si la solicitud de suscripción fue enviada
+ * @returns {JSX.Element} - Componente Contacto
+ */
 function Contact({ jid, status, newMessage, nick, requestFollow, subRequestSent, show }) {
 
   const showClasses = {

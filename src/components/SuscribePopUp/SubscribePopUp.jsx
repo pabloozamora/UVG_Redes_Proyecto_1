@@ -4,6 +4,14 @@ import PopUp from "../PopUp/PopUp";
 import styles from './SubscribePopUp.module.css';
 import useStropheClient from "../../connection/StropheClient";
 
+/**
+ * Función que renderiza un componente PopUp para enviar una solicitud de suscripción
+ * @param {close} close - Función para cerrar el PopUp
+ * @param {isOpen} isOpen - Indica si el PopUp está abierto
+ * @param {jid} jid - JID del usuario al que se le enviará la solicitud
+ * @param {callback} callback - Función de callback al enviar la solicitud
+ * @returns {JSX.Element} - Componente PopUp para enviar una solicitud de suscripción
+ */
 function SubscribePopUp({
     close,
     isOpen,

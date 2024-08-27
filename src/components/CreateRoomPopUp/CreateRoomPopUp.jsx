@@ -5,6 +5,13 @@ import styles from './CreateRoomPopUp.module.css';
 import useStropheClient from "../../connection/StropheClient";
 import { XMPP_DOMAIN } from "../../connection/xmppConfig";
 
+/**
+ * Función que renderiza un componente PopUp para crear un chatroom
+ * @param {close} close - Función para cerrar el PopUp
+ * @param {isOpen} isOpen - Indica si el PopUp está abierto
+ * @param {callback} callback - Función de callback al crear el chatroom
+ * @returns {JSX.Element} - Componente PopUp para crear un chatroom
+ */
 function CreateRoomPopUp({
     close,
     isOpen,

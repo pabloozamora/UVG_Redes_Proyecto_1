@@ -3,6 +3,16 @@ import PropTypes from 'prop-types';
 import fadeOut from '../../helpers/animations/fadeOut';
 import styles from './PopUp.module.css';
 
+/**
+ * Función que renderiza un componente PopUp
+ * @param {close} close - Función para cerrar el PopUp
+ * @param {maxWidth} maxWidth - Ancho máximo del PopUp
+ * @param {closeWithBackground} closeWithBackground - Indica si se cierra al hacer click en el fondo
+ * @param {closeButton} closeButton - Indica si se muestra el botón de cerrar
+ * @param {children} children - Elementos hijos
+ * @param {callback} callback - Función de callback al cerrar el PopUp
+ * @returns {JSX.Element} - Componente PopUp
+ */
 function PopUp({
   close, maxWidth, closeWithBackground, closeButton, children, callback,
 }) {

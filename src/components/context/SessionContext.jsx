@@ -5,6 +5,11 @@ import PropTypes from 'prop-types';
 
 const SessionContext = createContext();
 
+/**
+ * Función que provee el contexto de sesión
+ * @param {Object} children - Componentes hijos
+ * @returns {JSX.Element} - Componente de contexto de sesión
+ */
 function SessionProvider({ children }) {
     // El token undefined significa que aún no se ha intentado obtener,
     // null es que la sesión no existe

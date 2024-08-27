@@ -4,6 +4,10 @@ import Contact from '../../components/Contact/Contact';
 import styles from './UsersPage.module.css';
 import SessionContext from '../../components/context/SessionContext';
 
+/**
+ * Función que renderiza la página de búsqueda de usuarios
+ * @returns {JSX.Element} - Componente UsersPage
+ */
 function UsersPage() {
     const { searchUsersAdvanced, fetchContacts } = useStropheClient();
   const [searchTerm, setSearchTerm] = useState('');

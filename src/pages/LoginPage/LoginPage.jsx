@@ -3,6 +3,11 @@ import Login from "../../components/Login/Login";
 import styles from './LoginPage.module.css';
 import PropTypes from 'prop-types';
 
+/**
+ * Función que renderiza la página de inicio de sesión
+ * @param {setSignUp} setSignUp - Función para cambiar el estado de registro
+ * @returns {JSX.Element} - Página de inicio de sesión
+ */
 function LoginPage({ setSignUp }) {
   return (
     <div className={styles.loginPageContainer}>

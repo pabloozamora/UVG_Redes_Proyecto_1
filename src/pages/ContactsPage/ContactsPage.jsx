@@ -6,6 +6,10 @@ import useStropheClient from "../../connection/StropheClient";
 import usePopUp from "../../hooks/usePopUp";
 import SubscribePopUp from "../../components/SuscribePopUp";
 
+/**
+ * Función que renderiza la página de Contactos
+ * @returns {JSX.Element} - Componente ContactsPage
+ */
 function ContactsPage() {
     const { contacts, subRequests, pubSubs, subRequestsSent } = useContext(SessionContext);
     const [subscribeToJid, setSubscribeToJid] = useState('');

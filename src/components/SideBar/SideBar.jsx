@@ -7,6 +7,10 @@ import { FaUser, FaUsers } from 'react-icons/fa';
 import { IoChatbubble, IoChatbubbles, IoLogOut } from "react-icons/io5";
 import { BiSolidContact } from "react-icons/bi";
 
+/**
+ * Función que renderiza un componente SideBar
+ * @returns {JSX.Element} - Componente SideBar
+ */
 function SideBar() {
   const { handleDisconnect } = useStropheClient();
   const { newPrivateChat, newGroupChat } = useContext(SessionContext);

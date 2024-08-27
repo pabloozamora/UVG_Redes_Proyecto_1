@@ -9,6 +9,10 @@ import GroupChatPage from "../GroupChatPage/GroupChatPage";
 import ProfilePage from "../ProfilePage";
 import UsersPage from "../UsersPage/UsersPage";
 
+/**
+ * Función que renderiza la página principal de la aplicación
+ * @returns {JSX.Element} - Página principal de la aplicación
+ */
 function ChatIndexPage() {
     return(
         <PageContainer>
