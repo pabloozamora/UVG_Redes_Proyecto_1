@@ -69,7 +69,8 @@ npm run dev
 ## Screenshots
 ![image](https://github.com/user-attachments/assets/abeca790-22e1-431a-828c-db0154182f74)
 ![image](https://github.com/user-attachments/assets/e640e272-c408-4cf3-9ec9-fd71a03347d2)
-![image](https://github.com/user-attachments/assets/d4600952-5916-4273-91b7-e7e63e5baff3)
+![image](https://github.com/user-attachments/assets/40657679-ff03-4ea8-9d46-f2878e2fea10)
+![image](https://github.com/user-attachments/assets/79413e21-24db-46b7-82b3-e31b3004563c)
 ![image](https://github.com/user-attachments/assets/cdeaae7e-49b2-4778-be28-b93ee85c507f)
 ![image](https://github.com/user-attachments/assets/b35e300f-73d1-4f4b-a89a-705c69bd4b58)
 ![image](https://github.com/user-attachments/assets/3e9842ef-e29d-4fea-be8a-fd209d78db82)
