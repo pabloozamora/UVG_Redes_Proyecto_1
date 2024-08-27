@@ -19,13 +19,13 @@ const SignUp = ({ setSignUp }) => {
     <form className={styles.loginContainer}>
       <input
         type="text"
-        placeholder="username"
+        placeholder="Nombre de usuario"
         value={username}
         onChange={(e) => setUsername(e.target.value)}
       />
       <input
         type="password"
-        placeholder="Password"
+        placeholder="Contraseña"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />

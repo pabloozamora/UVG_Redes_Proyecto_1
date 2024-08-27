@@ -22,7 +22,7 @@ const Login = () => {
       />
       <input
         type="password"
-        placeholder="Password"
+        placeholder="Contraseña"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
