@@ -22,6 +22,8 @@ function SessionProvider({ children }) {
     const [rooms, setRooms] = useState([]);
     const [userRooms, setUserRooms] = useState([]);
     const [userPresence, setUserPresence] = useState({});
+    const [newPrivateChat, setNewPrivateChat] = useState(false);
+    const [newGroupChat, setNewGroupChat] = useState(true);
 
     useEffect(() => {
       console.log(messagesByUser);
@@ -56,6 +58,10 @@ function SessionProvider({ children }) {
         setUserRooms,
         userPresence,
         setUserPresence,
+        newPrivateChat,
+        setNewPrivateChat,
+        newGroupChat,
+        setNewGroupChat,
     };
   
     useEffect(() => {

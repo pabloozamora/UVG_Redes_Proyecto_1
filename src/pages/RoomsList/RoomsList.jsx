@@ -8,7 +8,7 @@ import JoinGroupPopUp from "../../components/JoinGroupPopUp/JoinGroupPopUp";
 import CreateRoomPopUp from "../../components/CreateRoomPopUp/CreateRoomPopUp";
 
 function RoomLists() {
-  const { rooms, userRooms, setUserRooms, newGroupMessage } = useContext(SessionContext);
+  const { rooms, userRooms, setUserRooms, newGroupMessage, newGroupChat, setNewGroupChat } = useContext(SessionContext);
   const { fetchGroupChats, checkRoomPassword, leaveGroupChat } = useStropheClient();
   const [currentRoom, setCurrentRoom] = useState(null);
   const [hasPassword, setHasPassword] = useState(false);
@@ -56,6 +56,10 @@ function RoomLists() {
     console.log(currentRoom);
     openJoin();
   }, [currentRoom]);
+
+  useEffect(() => {
+    setNewGroupChat(false);
+  },[newGroupChat]);
 
   useEffect(() => {
     fetchGroupChats();

@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useContext } from 'react';
+import SessionContext from '../context/SessionContext';
 import { NavLink } from 'react-router-dom';
 import styles from './SideBar.module.css';
 import useStropheClient from '../../connection/StropheClient';
@@ -8,6 +9,7 @@ import { BiSolidContact } from "react-icons/bi";
 
 function SideBar() {
   const { handleDisconnect } = useStropheClient();
+  const { newPrivateChat, newGroupChat } = useContext(SessionContext);
   return (
     <div className={styles.sideBarContainer}>
         <div className={styles.sideBarHeader}>
@@ -22,6 +24,7 @@ function SideBar() {
             <NavLink to="/" className={({ isActive }) => (isActive ? `${styles.navElement} ${styles.active}` : `${styles.navElement}` )}>
               <IoChatbubble />
               <span>Chats</span>
+              {newPrivateChat && <div className={styles.newMessageIndicator}></div>}
             </NavLink>
             <NavLink to="/contacts" className={({ isActive }) => (isActive ? `${styles.navElement} ${styles.active}` : `${styles.navElement}` )}>
               <BiSolidContact />
@@ -30,6 +33,7 @@ function SideBar() {
             <NavLink to="/rooms" className={({ isActive }) => (isActive ? `${styles.navElement} ${styles.active}` : `${styles.navElement}` )}>
               <IoChatbubbles />
               <span>Salas</span>
+              {newGroupChat && <div className={styles.newMessageIndicator}></div>}
             </NavLink>
             <NavLink to="/users" className={({ isActive }) => (isActive ? `${styles.navElement} ${styles.active}` : `${styles.navElement}` )}>
               <FaUsers />

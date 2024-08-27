@@ -22,6 +22,8 @@ const useStropheClient = () => {
     setMessagesByGroup,
     setUserRooms,
     setUserPresence,
+    setNewPrivateChat,
+    setNewGroupChat,
   } = useContext(SessionContext);
   const [password, setPassword] = useState('');
 
@@ -163,6 +165,8 @@ const useStropheClient = () => {
         return { ...prevMessagesByGroup, [groupChat]: [...groupMessages, { username, messageText, type: 'groupchat', isImage }] };
       });
 
+      setNewGroupChat(true);
+
       setNewGroupMessage((prevNewGroupMessage) => {
         return { ...prevNewGroupMessage, [groupChat]: true };
       });
@@ -176,6 +180,8 @@ const useStropheClient = () => {
         const userMessages = prevMessagesByUser[from] || [];
         return { ...prevMessagesByUser, [from]: [...userMessages, { from, messageText, type: 'chat', isImage }] };
       });
+
+      setNewPrivateChat(true);
 
       setNewMessage((prevNewMessage) => {
         return { ...prevNewMessage, [from]: true };

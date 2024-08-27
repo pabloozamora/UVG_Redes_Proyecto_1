@@ -1,20 +1,24 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import SessionContext from "../../components/context/SessionContext";
 import Contact from "../../components/Contact/Contact";
 import styles from "./ChatsList.module.css";
 
 function ChatsList() {
-	const { messagesByUser, newMessage } = useContext(SessionContext);
+	const { messagesByUser, newMessage, newPrivateChat, setNewPrivateChat } = useContext(SessionContext);
 
    // Filtrar mensajes para incluir solo los de tipo "chat"
    const filteredMessagesByUser = Object.keys(messagesByUser)
    .filter((userJid) => 
-     messagesByUser[userJid].some(message => message.type === "chat")
+     messagesByUser[userJid].some(message => message.type === "chat" || message.type === "sent")
    )
    .reduce((filtered, userJid) => {
      filtered[userJid] = messagesByUser[userJid];
      return filtered;
    }, {});
+
+  useEffect(() => {
+    setNewPrivateChat(false);
+  },[newPrivateChat]);
 
   return (
     <div className={styles.chatPageContainer}>
