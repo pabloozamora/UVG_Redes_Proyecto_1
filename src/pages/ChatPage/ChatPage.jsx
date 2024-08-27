@@ -61,9 +61,11 @@ function ChatPage() {
                 <div
                     key={index}
                     style={{ textAlign: msg.type === "sent" ? "right" : "left", marginTop: "10px" }}
+                    className={msg.type === "sent" ? styles.sentMessage : styles.receivedMessage}
                 >
                     <strong>{msg.type === "sent" ? "Yo" : msg.from}</strong>:{" "}
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: msg.type === "sent" ? "flex-end" : "flex-start"}}>
+                    <div
+                    style={{ display: "flex", flexDirection: "column", alignItems: msg.type === "sent" ? "flex-end" : "flex-start"}}>
                         {msg.isImage && <img src={msg.messageText} alt="Image" style={{ maxWidth: '200px' }} />}
                         {msg.messageText}
                     </div>

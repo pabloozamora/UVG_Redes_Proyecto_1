@@ -64,11 +64,12 @@ function GroupChatPage() {
                 <div
                     key={index}
                     style={{ textAlign: msg.username === usernickname ? "right" : "left", marginTop: "10px" }}
+                    className={ msg.username === usernickname ? styles.sentMessage : styles.receivedMessage}
                 >
                     <strong>{msg.username === usernickname ? "Yo" : msg.username}</strong>:{" "}
                     <div style={{ display: "flex", flexDirection: "column", alignItems: msg.username === usernickname ?'flex-end' : 'flex-start' }}>
                         {msg.isImage && <img src={msg.messageText} alt="Image" style={{ maxWidth: '200px' }} />}
-                        {msg.messageText}
+                        <span>{msg.messageText}</span>
                     </div>
                 </div>
                 ))}

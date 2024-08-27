@@ -24,3 +24,23 @@
     padding: 10px;
     background-color: #595252;
 }
+
+.sentMessage {
+    background-color: #487de6;
+    color: white;
+    padding: 10px;
+    border-radius: 10px;
+    margin: 10px 0;
+    max-width: fit-content;
+    align-self: flex-end;
+}
+
+.receivedMessage {
+    background-color: #f0f0f0;
+    color: black;
+    padding: 10px;
+    border-radius: 10px;
+    margin: 10px 0;
+    max-width: fit-content;
+    align-self: flex-start;
+}
