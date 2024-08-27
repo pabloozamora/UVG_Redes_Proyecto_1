@@ -14,6 +14,12 @@
     border-radius: 10px;
 }
 
+.requestsList{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
 .requestActions {
     display: flex;
     gap: 10px;
